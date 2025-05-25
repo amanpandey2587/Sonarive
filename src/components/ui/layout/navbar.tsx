@@ -13,8 +13,12 @@ const navItems = [
     { label: 'Home', href: '/' },
     { label: 'Scan Analysis', href: '/scan' },
     { label: 'About Us', href: '/about' },
+    { label:'Drug Research',href:'/drugResearch'},
+    {label : 'Treatment Planner',href:'/treatmentPlans'},
+    {label:'Smart Hospitals',href:'/smartHospitals'},
     { label: 'Contact', href: '/contact' },
     { label: 'FAQ', href: '/faq' },
+
   ];
 
   export function Navbar() {

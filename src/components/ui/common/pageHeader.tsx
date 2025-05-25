@@ -3,17 +3,18 @@ interface PageHeaderProps{
     description?:string;
 }
 
-export function PageHeader({title,description}:PageHeaderProps){
+export function PageHeader({ title, description }: PageHeaderProps) {
     return (
-        <div>
-            <h1>
-                {title}
-            </h1>
-            {description && (
-                <p className="mt-3 text-lg text-muted-foreground md:text-xl">
-                    {description}
-                </p>
-            )}
-        </div>
+      <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl p-6 md:p-10">
+        <h1 className="text-3xl md:text-5xl font-bold text-indigo-200">
+          {title}
+        </h1>
+        {description && (
+          <p className="mt-4 text-lg md:text-xl text-teal-100">
+            {description}
+          </p>
+        )}
+      </div>
     );
-}
+  }
+  

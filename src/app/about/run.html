@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedAI Assistant - Powered by Sonar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a5568;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+        }
+
+        .feature-card.active {
+            border: 2px solid #667eea;
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            color: #4a5568;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .feature-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-new {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        /* Content Area */
+        .content-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            min-height: 400px;
+        }
+
+        .content-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .content-title {
+            font-size: 1.8rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-subtitle {
+            color: #4a5568;
+            font-size: 1rem;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #a0aec0;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Results Area */
+        .results {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .result-card {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 10px 10px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        /* Hidden content sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🏥 MedAI Assistant</div>
+            <ul class="nav-links">
+                <li><a href="#scan" class="nav-link active">Scan Analysis</a></li>
+                <li><a href="#hospitals" class="nav-link">Smart Hospitals</a></li>
+                <li><a href="#drugs" class="nav-link">Drug Research</a></li>
+                <li><a href="#treatment" class="nav-link">Treatment Plans</a></li>
+                <li><a href="#research" class="nav-link">Research Engine</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Features Overview -->
+        <div class="features-grid">
+            <div class="feature-card active" data-feature="scan">
+                <div class="feature-icon">🔍</div>
+                <div class="feature-title">Scan Analysis</div>
+                <div class="feature-description">Upload X-rays and medical reports for AI-powered analysis and prescriptions</div>
+                <span class="feature-status status-active">Active</span>
+            </div>
+
+            <div class="feature-card" data-feature="hospitals">
+                <div class="feature-icon">🏥</div>
+                <div class="feature-title">Smart Hospital Finder</div>
+                <div class="feature-description">Find nearby hospitals ranked by specialization and patient reviews</div>
+                <span class="feature-status status-new">Sonar Powered</span>
+            </div>
+
+            <div class="feature-card" data-feature="drugs">
+                <div class="feature-icon">💊</div>
+                <div class="feature-title">Drug Information</div>
+                <div class="feature-description">Research medications, alternatives, and interactions</div>
+                <span class="feature-status status-new">Sonar Powered</span>
+            </div>
+
+            <div class="feature-card" data-feature="treatment">
+                <div class="feature-icon">📋</div>
+                <div class="feature-title">Treatment Planner</div>
+                <div class="feature-description">Get personalized recovery plans and care timelines</div>
+                <span class="feature-status status-new">Sonar Powered</span>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Scan Analysis Section -->
+            <div class="content-section active" id="scan-content">
+                <div class="content-header">
+                    <h2 class="content-title">Medical Scan Analysis</h2>
+                    <p class="content-subtitle">Upload your X-rays, CT scans, or medical reports for AI-powered analysis</p>
+                </div>
+
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        <strong>Click to upload</strong> or drag and drop your medical files<br>
+                        <small>Supports: PDF, JPG, PNG, DICOM</small>
+                    </div>
+                    <input type="file" id="fileInput" style="display: none;" accept=".pdf,.jpg,.jpeg,.png,.dcm" multiple>
+                </div>
+
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your medical data with AI...</p>
+                </div>
+
+                <div class="results">
+                    <div class="result-card">
+                        <h3>📊 Analysis Summary</h3>
+                        <p>AI-generated analysis will appear here...</p>
+                    </div>
+                    <div class="result-card">
+                        <h3>💊 Prescription Recommendations</h3>
+                        <p>Medication suggestions will appear here...</p>
+                    </div>
+                    <div class="result-card">
+                        <h3>⚠️ Precautions</h3>
+                        <p>Important precautions and warnings will appear here...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Hospitals Section -->
+            <div class="content-section" id="hospitals-content">
+                <div class="content-header">
+                    <h2 class="content-title">Smart Hospital Recommendations</h2>
+                    <p class="content-subtitle">AI-powered hospital finder based on your condition and location</p>
+                </div>
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏥</div>
+                    <h3>Intelligent Hospital Matching</h3>
+                    <p style="color: #4a5568; margin: 1rem 0;">Sonar researches hospitals by specialization, reviews, and success rates</p>
+                    <button class="btn btn-primary">Find Best Hospitals</button>
+                </div>
+            </div>
+
+            <!-- Drug Research Section -->
+            <div class="content-section" id="drugs-content">
+                <div class="content-header">
+                    <h2 class="content-title">Drug Information & Research</h2>
+                    <p class="content-subtitle">Comprehensive medication research powered by Sonar AI</p>
+                </div>
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">💊</div>
+                    <h3>Smart Drug Analysis</h3>
+                    <p style="color: #4a5568; margin: 1rem 0;">Research interactions, alternatives, and patient experiences</p>
+                    <button class="btn btn-primary">Research Medications</button>
+                </div>
+            </div>
+
+            <!-- Treatment Plans Section -->
+            <div class="content-section" id="treatment-content">
+                <div class="content-header">
+                    <h2 class="content-title">Personalized Treatment Journey</h2>
+                    <p class="content-subtitle">AI-researched recovery plans and care timelines</p>
+                </div>
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+                    <h3>Comprehensive Care Planning</h3>
+                    <p style="color: #4a5568; margin: 1rem 0;">Sonar creates detailed recovery roadmaps based on latest medical research</p>
+                    <button class="btn btn-primary">Create Treatment Plan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation functionality
+        const navLinks = document.querySelectorAll('.nav-link');
+        const featureCards = document.querySelectorAll('.feature-card');
+        const contentSections = document.querySelectorAll('.content-section');
+
+        function switchContent(target) {
+            // Update nav links
+            navLinks.forEach(link => link.classList.remove('active'));
+            document.querySelector(`[href="#${target}"]`).classList.add('active');
+
+            // Update feature cards
+            featureCards.forEach(card => card.classList.remove('active'));
+            document.querySelector(`[data-feature="${target}"]`).classList.add('active');
+
+            // Update content sections
+            contentSections.forEach(section => section.classList.remove('active'));
+            document.getElementById(`${target}-content`).classList.add('active');
+        }
+
+        // Add click listeners to nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('href').substring(1);
+                switchContent(target);
+            });
+        });
+
+        // Add click listeners to feature cards
+        featureCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const target = card.getAttribute('data-feature');
+                switchContent(target);
+            });
+        });
+
+        // File upload functionality for scan analysis
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.querySelector('.loading');
+        const results = document.querySelector('.results');
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                // Show loading
+                loading.style.display = 'block';
+                results.style.display = 'none';
+
+                // Simulate API call
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    results.style.display = 'block';
+                    
+                    // Scroll to results
+                    results.scrollIntoView({ behavior: 'smooth' });
+                }, 3000);
+            }
+        });
+
+        // Add some interactive hover effects
+        featureCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                if (!card.classList.contains('active')) {
+                    card.style.transform = 'translateY(-5px)';
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                if (!card.classList.contains('active')) {
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

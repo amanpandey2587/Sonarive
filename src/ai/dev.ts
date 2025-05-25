@@ -1,3 +1,4 @@
 import {config} from 'dotenv'
 config();
-import 
+import '@/ai/flows/summarizeScanFindings.ts'
+import '@/ai/flows/analyzeMedicalScan'
