@@ -1,7 +1,18 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Navbar } from "@/components/ui/layout/navbar";
+import { Footer } from "@/components/ui/layout/footer";
 import { Toaster } from "sonner";
+import { type Metadata } from 'next'
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,8 +24,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MediScan",
-  description: "AI-Powered medical scan analysis for MRI,CT, and X-ray images.",
+  title: "Sonarive",
+  description: "Personalized Health Application",
 };
 
 export default function RootLayout({
@@ -23,13 +34,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+
+        <div className="flex min-h-screen flex-col">
+          <Navbar />
+          <div className="flex-grow">{children}</div>
+          <Footer />
+        </div>
         <Toaster/>
       </body>
     </html>
+    </ClerkProvider>
   );
 }

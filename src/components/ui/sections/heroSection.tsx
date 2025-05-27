@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Navbar } from '../layout/navbar';
+
 export function HeroSection() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white relative overflow-hidden">
@@ -13,7 +12,7 @@ export function HeroSection() {
       </div>
 
       {/* Navigation */}
-      <Navbar/>
+      {/* <Navbar/> */}
 
       {/* Hero Section */}
       <section className="py-20 md:py-32 lg:py-40 relative">
@@ -146,23 +145,7 @@ export function HeroSection() {
         </div>
 
         {/* Stats Section */}
-        <div className="container mx-auto px-6 mt-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { number: '50K+', label: 'Scans Analyzed' },
-              { number: '99.8%', label: 'Accuracy Rate' },
-              { number: '24/7', label: 'AI Support' },
-              { number: '10M+', label: 'Patients Helped' }
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-slate-400">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+       
       </section>
 
       {/* Features Preview */}

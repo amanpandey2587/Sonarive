@@ -1,26 +1,44 @@
-"use client"
+'use client'
 import React, { useEffect, useRef } from 'react';
 import { Users, Target, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 
+// Type declarations for external libraries
+declare global {
+  interface Window {
+    AOS: {
+      init: (config: any) => void;
+    };
+    Lenis: new (config: any) => {
+      raf: (time: number) => void;
+    };
+  }
+}
+
 const AboutPage = () => {
-  const heroRef = useRef(null);
-  const missionRef = useRef(null);
-  const valuesRef = useRef(null);
-  const ctaRef = useRef(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const missionRef = useRef<HTMLDivElement>(null);
+  const valuesRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize AOS (Animate On Scroll)
+    // Initialize AOS (Animate On Scroll) - moved to a safer approach
+    const initAOS = () => {
+      if (typeof window !== 'undefined' && window.AOS) {
+        window.AOS.init({
+          duration: 700,
+          easing: 'ease-out-cubic',
+          once: true,
+          offset: 100,
+          delay: 100,
+        });
+      }
+    };
+
+    // Load AOS
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js';
-    script.onload = () => {
-      window.AOS.init({
-        duration: 700,
-        easing: 'ease-out-cubic',
-        once: true,
-        offset: 100,
-        delay: 100,
-      });
-    };
+    script.onload = initAOS;
+    script.onerror = () => console.warn('AOS failed to load');
     document.head.appendChild(script);
 
     const link = document.createElement('link');
@@ -28,40 +46,59 @@ const AboutPage = () => {
     link.rel = 'stylesheet';
     document.head.appendChild(link);
 
-    // Initialize Lenis for smooth scrolling
-    const lenisScript = document.createElement('script');
-    lenisScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.42/lenis.min.js';
-    lenisScript.onload = () => {
-      const lenis = new window.Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        smooth: true,
-      });
+    // Initialize Lenis for smooth scrolling - with error handling
+    const initLenis = () => {
+      if (typeof window !== 'undefined' && window.Lenis) {
+        const lenis = new window.Lenis({
+          duration: 1.2,
+          easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          smooth: true,
+        });
 
-      function raf(time) {
-        lenis.raf(time);
+        function raf(time: number) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
         requestAnimationFrame(raf);
       }
-      requestAnimationFrame(raf);
     };
+
+    const lenisScript = document.createElement('script');
+    lenisScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.42/lenis.min.js';
+    lenisScript.onload = initLenis;
+    lenisScript.onerror = () => console.warn('Lenis failed to load');
     document.head.appendChild(lenisScript);
 
     // Parallax effect for background elements
     const handleScroll = () => {
       const scrolled = window.pageYOffset;
-      const rate = scrolled * -0.5;
       const orbs = document.querySelectorAll('.parallax-orb');
       orbs.forEach((orb, index) => {
         const speed = 0.2 + (index * 0.1);
-        orb.style.transform = `translateY(${scrolled * speed}px)`;
+        const element = orb as HTMLElement;
+        element.style.transform = `translateY(${scrolled * speed}px)`;
       });
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Cleanup function
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      // Remove scripts if needed
+      const scripts = document.querySelectorAll('script[src*="aos"], script[src*="lenis"]');
+      scripts.forEach(script => script.remove());
+      const links = document.querySelectorAll('link[href*="aos"]');
+      links.forEach(link => link.remove());
+    };
   }, []);
 
-  const FloatingOrb = ({ className, delay = 0 }) => (
+  interface FloatingOrbProps {
+    className?: string;
+    delay?: number;
+  }
+
+  const FloatingOrb: React.FC<FloatingOrbProps> = ({ className = '', delay = 0 }) => (
     <div 
       className={`absolute rounded-full blur-3xl opacity-60 animate-float ${className}`}
       style={{ 
@@ -103,7 +140,7 @@ const AboutPage = () => {
             data-aos-delay="200"
           >
             <span className="bg-gradient-to-r from-blue-300 via-teal-300 to-cyan-300 bg-clip-text text-transparent animate-gradient-x">
-              About MediScan AI
+              About Sonarive
             </span>
           </h1>
           
@@ -130,7 +167,7 @@ const AboutPage = () => {
               
               <div className="space-y-6 text-lg leading-relaxed">
                 <p className="text-blue-100/90 group-hover:text-white transition-colors duration-500">
-                  At MediScan AI, our mission is to empower patients and healthcare professionals with accessible, 
+                  At Sonarive, our mission is to empower patients and healthcare professionals with accessible, 
                   understandable, and highly accurate medical scan interpretations. We believe that by leveraging 
                   the power of AI, we can demystify complex medical data and contribute to better health outcomes.
                 </p>
@@ -164,7 +201,7 @@ const AboutPage = () => {
                       data-aos="fade-up"
                       data-aos-delay={stat.delay + 600}
                     >
-                      <div className="text-3xl font-bold text-white mb-2 animate-count-up">{stat.value}</div>
+                      <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
                       <div className="text-sm text-blue-200 font-medium">{stat.label}</div>
                     </div>
                   ))}
@@ -251,7 +288,7 @@ const AboutPage = () => {
                 Ready to Experience the Future?
               </h3>
               <p className="text-blue-100/90 text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
-                Join thousands of healthcare professionals who trust MediScan AI for accurate, 
+                Join thousands of healthcare professionals who trust Sonarive for accurate, 
                 fast, and reliable medical scan analysis.
               </p>
               <button className="group bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white font-semibold px-12 py-5 rounded-full transition-all duration-500 hover:scale-110 shadow-xl hover:shadow-2xl hover:shadow-blue-500/40 border border-white/20 hover:border-white/40">

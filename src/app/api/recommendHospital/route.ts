@@ -1,5 +1,3 @@
-// app/api/recommendHospital/route.ts
-
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -92,7 +90,7 @@ Use your web search capabilities to find real, current information about:
 
 Provide 7-8 of the most relevant hospital recommendations based on the search results.
 
-Return your response as a JSON object with this exact structure:
+IMPORTANT: Return ONLY a valid JSON object with this exact structure, no additional text before or after:
 {
   "recommendationIntro": "Brief paragraph introducing the recommendations based on search results",
   "hospitals": [
@@ -107,7 +105,7 @@ Return your response as a JSON object with this exact structure:
       },
       "contact": "Phone number or website if available"
     }
-  ],
+  ]
 }
 
 Important:
@@ -115,7 +113,8 @@ Important:
 - Include coordinates only if you can find reliable location data
 - Prioritize hospitals that actually specialize in treating the given conditions
 - If no specific hospitals are found, provide general guidance
-- Ensure the JSON is valid and properly formatted`;
+- Ensure the JSON is valid and properly formatted
+- DO NOT include any explanatory text before or after the JSON`;
 
     const sonarResponse = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -146,7 +145,7 @@ Important:
     }
 
     const result = await sonarResponse.json();
-    console.log("Result in the frontend is",result)
+    console.log("Result in the frontend is", result);
     const replyText = result?.choices?.[0]?.message?.content;
 
     if (!replyText) {
@@ -155,10 +154,23 @@ Important:
       }, { status: 500 });
     }
 
-    // Clean up code block formatting
+    // Enhanced JSON extraction and parsing
     let cleanedOutput = replyText.trim();
-    if (cleanedOutput.startsWith("```json") || cleanedOutput.startsWith("```")) {
-      cleanedOutput = cleanedOutput.replace(/```json|```/g, "").trim();
+
+    // First, try to extract JSON from code blocks
+    const jsonBlockMatch = cleanedOutput.match(/```json\s*([\s\S]*?)\s*```/) || 
+                          cleanedOutput.match(/```\s*([\s\S]*?)\s*```/);
+
+    if (jsonBlockMatch) {
+      cleanedOutput = jsonBlockMatch[1].trim();
+    } else {
+      // If no code blocks, try to find JSON object starting with {
+      const jsonStartIndex = cleanedOutput.indexOf('{');
+      const jsonEndIndex = cleanedOutput.lastIndexOf('}');
+      
+      if (jsonStartIndex !== -1 && jsonEndIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+        cleanedOutput = cleanedOutput.substring(jsonStartIndex, jsonEndIndex + 1);
+      }
     }
 
     let parsed: RecommendHospitalsOutput;
@@ -168,19 +180,25 @@ Important:
       parsed = RecommendHospitalsOutputSchema.parse(jsonData);
     } catch (parseError: any) {
       console.error('Parse error:', parseError);
-      console.error('Raw output:', cleanedOutput);
+      console.error('Raw output:', replyText); // Log original response
+      console.error('Cleaned output:', cleanedOutput); // Log what we tried to parse
       
-      // Fallback response if parsing fails
+      // Enhanced fallback response with more specific error handling
       return NextResponse.json({
-        recommendationIntro: "Unable to parse search results properly, but here's general guidance:",
+        recommendationIntro: "Search completed but response formatting encountered an issue. Here's general guidance based on your request:",
         hospitals: [{
-          hospitalName: "Search Results Available",
+          hospitalName: "Manual Search Recommended",
           specializationFocus: hasConditions ? 
             `Treatment for ${input.diagnosedConditions!.join(', ')}` : 
             `Care for ${input.symptoms!.join(', ')}`,
-          simulatedRankingReason: "Please search manually for hospitals in your area specializing in your specific condition.",
+          simulatedRankingReason: `Please search manually for hospitals ${locationContext} specializing in your specific condition. The search service returned data but in an unexpected format.`,
           address: "Location-based search recommended",
         }],
+        debugInfo: {
+          parseError: parseError.message,
+          rawOutputPreview: replyText.substring(0, 300) + "...",
+          cleanedOutputPreview: cleanedOutput.substring(0, 300) + "..."
+        }
       });
     }
 

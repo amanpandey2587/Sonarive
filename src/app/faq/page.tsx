@@ -1,32 +1,32 @@
 "use client"
 import React, { useState } from 'react';
-import { ChevronDown, Plus, Minus } from 'lucide-react';
+import {  Plus, Minus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 
 const faqData = [
   {
-    question: "What is MediScan AI and how does it work?",
-    answer: "MediScan AI is an advanced medical imaging analysis platform that uses artificial intelligence to assist healthcare professionals in diagnosing medical conditions. Our AI algorithms analyze medical scans such as X-rays, CT scans, and MRIs to identify potential abnormalities and provide detailed insights to support clinical decision-making."
+    question: "What is Sonarive and how does it work?",
+    answer: "Sonarive is an advanced medical imaging analysis platform that uses artificial intelligence to assist healthcare professionals in diagnosing medical conditions. Our AI algorithms analyze medical scans such as X-rays, CT scans, and MRIs to identify potential abnormalities and provide detailed insights to support clinical decision-making."
   },
   {
     question: "How accurate is the AI diagnosis?",
-    answer: "Our AI models achieve accuracy rates of 75-78% across various imaging modalities, often matching or exceeding the performance of experienced radiologists. However, MediScan AI is designed to assist, not replace, medical professionals. All AI-generated insights should be reviewed and interpreted by qualified healthcare providers."
+    answer: "Our AI models achieve accuracy rates of 75-78% across various imaging modalities, often matching or exceeding the performance of experienced radiologists. However, Sonarive is designed to assist, not replace, medical professionals. All AI-generated insights should be reviewed and interpreted by qualified healthcare providers."
   },
   {
-    question: "What types of medical scans does MediScan AI support?",
-    answer: "MediScan AI supports a wide range of medical imaging modalities including X-rays, CT scans, MRI scans, ultrasounds, and mammograms. Our platform can analyze scans for various medical specialties including cardiology, orthopedics, oncology, and general radiology."
+    question: "What types of medical scans does Sonarive support?",
+    answer: "Sonarive supports a wide range of medical imaging modalities including X-rays, CT scans, MRI scans, ultrasounds, and mammograms. Our platform can analyze scans for various medical specialties including cardiology, orthopedics, oncology, and general radiology."
   },
   {
     question: "How secure is patient data on your platform?",
     answer: "Patient data security is our top priority. We employ enterprise-grade encryption, comply with HIPAA regulations, and follow SOC 2 Type II standards. All data is encrypted both in transit and at rest, and we maintain strict access controls and audit trails to ensure patient privacy and data integrity."
   },
   {
-    question: "Can MediScan AI integrate with existing hospital systems?",
-    answer: "Yes, MediScan AI is designed to seamlessly integrate with existing PACS (Picture Archiving and Communication Systems), EMR/EHR systems, and other hospital infrastructure. Our platform supports standard medical imaging protocols like DICOM and HL7 for smooth data exchange."
+    question: "Can Sonarive integrate with existing hospital systems?",
+    answer: "Yes, Sonarive is designed to seamlessly integrate with existing PACS (Picture Archiving and Communication Systems), EMR/EHR systems, and other hospital infrastructure. Our platform supports standard medical imaging protocols like DICOM and HL7 for smooth data exchange."
   },
   {
-    question: "What is the pricing model for MediScan AI?",
+    question: "What is the pricing model for Sonarive?",
     answer: "We offer flexible pricing models including per-scan pricing, monthly subscriptions, and enterprise licensing options. Pricing varies based on usage volume, features required, and integration complexity. Contact our sales team for a customized quote based on your specific needs."
   },
   {
@@ -38,7 +38,7 @@ const faqData = [
 export default function FaqPage() {
   const [openItems, setOpenItems] = useState(new Set());
   const router=useRouter();
-  const toggleItem = (index) => {
+  const toggleItem = (index:Number) => {
     const newOpenItems = new Set(openItems);
     if (newOpenItems.has(index)) {
       newOpenItems.delete(index);
@@ -81,7 +81,7 @@ export default function FaqPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-xl text-emerald-100/90 max-w-2xl mx-auto leading-relaxed">
-            Find answers to common questions about MediScan AI.
+            Find answers to common questions about Sonarive.
           </p>
         </div>
 

@@ -5,7 +5,7 @@ export default function ContactPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     // Simulate form submission
@@ -95,6 +95,7 @@ export default function ContactPage() {
 
                     <button
                       onClick={handleSubmit}
+                      type="button"
                       disabled={isSubmitting}
                       className={`w-full py-4 px-6 rounded-2xl font-semibold text-white transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl ${
                         isSubmitting 
