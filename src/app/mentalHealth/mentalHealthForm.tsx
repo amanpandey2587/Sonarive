@@ -314,7 +314,8 @@ export default function MentalHealthForm() {
       }
       setCurrentStep('results');
 
-    } catch (err: any) {
+    } catch (error) {
+      const err=error as Error
       console.error("Mental health analysis call failed:", err);
       setError(err.message || 'An error occurred during analysis. Please try again.');
       setApiResult({ analysis: null, error: err.message || 'An error occurred during analysis. Please try again.' });

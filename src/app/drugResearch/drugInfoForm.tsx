@@ -75,8 +75,9 @@ export function DrugInfoForm() {
       } else {
         setError('No information returned for the specified drugs.');
       }
-    } catch (e: any) {
-      setError('An unexpected error occurred: ' + (e.message || 'Please try again.'));
+    }catch (e) {
+      const error = e as Error;
+      setError('An unexpected error occurred: ' + (error.message || 'Please try again.'));
       console.error(e);
     } finally {
       setIsLoading(false);
