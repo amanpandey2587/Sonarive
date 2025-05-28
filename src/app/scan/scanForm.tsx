@@ -53,7 +53,6 @@ const ScanForm = () => {
     const [analysisResult,setAnalysisResult]=useState<AnalyzeMedicalScanOutput|null>(null);
     const [progressValue,setProgressValue]=useState(0);
     
-    // New states for integrated report
     const [showIntegratedForm, setShowIntegratedForm] = useState(false);
     const [disease, setDisease] = useState('');
     const [age, setAge] = useState<number | ''>('');
@@ -238,7 +237,6 @@ const ScanForm = () => {
             </CardContent>
           </Card>
   
-          {/* Loading Progress */}
           {isLoading && (
             <div className="space-y-4 bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg">
               <Progress value={progressValue} className="w-full h-3" />
@@ -246,7 +244,6 @@ const ScanForm = () => {
             </div>
           )}
   
-          {/* Error Alert */}
           {error && (
             <Alert className="border-red-200 bg-red-50 shadow-lg">
               <AlertCircle className="h-5 w-5 text-red-600" />
@@ -255,7 +252,6 @@ const ScanForm = () => {
             </Alert>
           )}
   
-          {/* Analysis Results */}
           {analysisResult && (
             <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm animate-in fade-in duration-500">
               <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-t-lg">
@@ -308,7 +304,6 @@ const ScanForm = () => {
                   </Alert>
                 )}
                 
-                {/* Report Generation Section */}
                 <div className="mt-6 pt-6 border-t border-slate-200">
                   {!showIntegratedForm ? (
                     <Button 
@@ -395,7 +390,6 @@ const ScanForm = () => {
             </Card>
           )}
   
-          {/* Integrated Medical Report */}
           {integratedReport && (
             <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm animate-in fade-in duration-500">
               <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
@@ -406,7 +400,6 @@ const ScanForm = () => {
               </CardHeader>
               <CardContent className="p-6 space-y-8 bg-gradient-to-b from-white to-slate-50">
                 
-                {/* Patient Info */}
                 <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-200 border-b border-blue-300">
                     <CardTitle className="flex items-center gap-2 text-blue-800">
@@ -433,7 +426,6 @@ const ScanForm = () => {
                   </CardContent>
                 </Card>
   
-                {/* Summary */}
                 <div>
                   <h3 className="text-xl font-semibold mb-3 flex items-center gap-2 text-slate-800">
                     <ClipboardList className="h-6 w-6 text-teal-600" /> Executive Summary
@@ -441,7 +433,6 @@ const ScanForm = () => {
                   <p className="text-slate-700 bg-gradient-to-r from-teal-50 to-indigo-50 p-4 rounded-lg shadow-inner border-l-4 border-teal-500">{integratedReport.summary}</p>
                 </div>
   
-                {/* Clinical Assessment */}
                 <Card className="bg-gradient-to-br from-emerald-50 to-teal-100 border border-emerald-200 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-emerald-100 to-teal-200 border-b border-emerald-300">
                     <CardTitle className="flex items-center gap-2 text-emerald-800">
@@ -453,7 +444,6 @@ const ScanForm = () => {
                   </CardContent>
                 </Card>
   
-                {/* Treatment Plan */}
                 <Card className="bg-gradient-to-br from-purple-50 to-indigo-100 border border-purple-200 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-purple-100 to-indigo-200 border-b border-purple-300">
                     <CardTitle className="flex items-center gap-2 text-purple-800">
@@ -503,7 +493,6 @@ const ScanForm = () => {
                   </CardContent>
                 </Card>
   
-                {/* Follow-up and Additional Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="bg-gradient-to-br from-orange-50 to-amber-100 border border-orange-200 shadow-lg">
                     <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-200 border-b border-orange-300">
@@ -540,7 +529,6 @@ const ScanForm = () => {
                   )}
                 </div>
   
-                {/* Risks and Prevention */}
                 {(integratedReport.diagnosisPlan.risks.length > 0 || integratedReport.diagnosisPlan.prevention.length > 0) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {integratedReport.diagnosisPlan.risks.length > 0 && (

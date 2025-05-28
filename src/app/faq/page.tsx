@@ -75,7 +75,6 @@ export default function FaqPage() {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 min-h-screen">
-        {/* Page Header */}
         <div className="text-center mb-16 animate-fade-in">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-emerald-200 via-teal-200 to-green-200 bg-clip-text text-transparent drop-shadow-lg">
             Frequently Asked Questions
@@ -85,7 +84,6 @@ export default function FaqPage() {
           </p>
         </div>
 
-        {/* FAQ Accordion */}
         <div className="max-w-4xl mx-auto">
           <div className="space-y-4">
             {faqData.map((item, index) => {
@@ -95,7 +93,6 @@ export default function FaqPage() {
                   
                   <div className="relative backdrop-blur-xl bg-gradient-to-br from-slate-800/40 via-emerald-900/20 to-teal-900/30 border border-emerald-200/10 rounded-2xl transition-all duration-300 hover:border-emerald-300/20 hover:shadow-emerald-500/10 overflow-hidden">
                     
-                    {/* Question/Trigger */}
                     <button
                       onClick={() => toggleItem(index)}
                       className="w-full px-6 py-6 text-left flex items-center justify-between group-hover:bg-emerald-500/5 transition-all duration-300 relative z-10"
@@ -112,7 +109,6 @@ export default function FaqPage() {
                       </div>
                     </button>
 
-                    {/* Answer/Content */}
                     <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                       <div className="px-6 pb-6 relative z-10">
                         <div className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent mb-4"></div>
@@ -122,7 +118,6 @@ export default function FaqPage() {
                       </div>
                     </div>
 
-                    {/* Decorative Elements */}
                     <div className="absolute top-4 right-16 w-2 h-2 bg-emerald-400/30 rounded-full animate-pulse"></div>
                     <div className="absolute bottom-4 left-6 w-1 h-1 bg-teal-400/40 rounded-full animate-pulse delay-1000"></div>
                   </div>
@@ -131,7 +126,6 @@ export default function FaqPage() {
             })}
           </div>
 
-          {/* Additional Info Section */}
           <div className="mt-16 text-center">
             <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/30 via-emerald-900/20 to-teal-900/30 border border-emerald-200/10 rounded-2xl p-8 max-w-2xl mx-auto">
               <h3 className="text-2xl font-bold text-emerald-100 mb-4">

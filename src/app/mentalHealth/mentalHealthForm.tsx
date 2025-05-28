@@ -15,7 +15,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 
-// Types for API communication
 export interface MentalWellnessAnalysisInput {
   age: number;
   gender: 'male' | 'female' | 'other' | 'prefer_not_to_say';
@@ -30,7 +29,6 @@ export interface MentalWellnessAnalysisOutput {
   comprehensiveReportMarkdown: string;
 }
 
-// Simplified speech recognition interface
 interface SimpleSpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
@@ -86,16 +84,14 @@ const answerOptions = [
   { label: "Nearly every day", value: 3 },
 ];
 
-// API call function
 async function handleMentalWellnessAnalysis(input: MentalWellnessAnalysisInput): Promise<ApiResult> {
   try {
-    // Map the input to match the API schema
     const apiPayload = {
       age: input.age,
       gender: input.gender,
-      ph9Score: input.phq9Score || 0, // API expects ph9Score, not phq9Score
+      ph9Score: input.phq9Score || 0, 
       gad7Score: input.gad7Score || 0,
-      textInput: input.textInput || "No additional text provided", // API requires non-empty string
+      textInput: input.textInput || "No additional text provided", 
       userLatitude: input.userLatitude,
       userLongitude: input.userLongitude,
     };
@@ -134,7 +130,7 @@ async function handleMentalWellnessAnalysis(input: MentalWellnessAnalysisInput):
 
 export default function MentalHealthForm() {
   const [currentStep, setCurrentStep] = useState<Step>('start');
-  const [age, setAge] = useState<number | string>(''); // Allow string for empty input
+  const [age, setAge] = useState<number | string>(''); 
   const [gender, setGender] = useState<string>('');
   const [textInput, setTextInput] = useState('');
   const [phq9Answers, setPhq9Answers] = useState<Record<string, number>>({});
@@ -221,7 +217,6 @@ export default function MentalHealthForm() {
       recognitionRef.current.stop();
     } else {
       try {
-        // Ensure microphone permission is granted before starting
         await navigator.mediaDevices.getUserMedia({ audio: true }); 
         recognitionRef.current.start();
       } catch (err: any) {
@@ -233,7 +228,7 @@ export default function MentalHealthForm() {
           specificError = 'No microphone found. Please connect a microphone and ensure it is enabled.';
         } else if (err.name === 'InvalidStateError') {
            specificError = 'Microphone is busy or in an invalid state. Please try again in a moment.';
-        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') { // TrackStartError is sometimes thrown by Chrome for hardware issues
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') { 
           specificError = 'Microphone is not readable or could not start. This might be due to a hardware issue, an OS-level permission problem, or another application using the microphone.';
         }
         setMicError(specificError);
@@ -299,7 +294,7 @@ export default function MentalHealthForm() {
       gender: gender as any,
       phq9Score, 
       gad7Score,
-      textInput: textInput.trim() || undefined, // Send undefined if empty
+      textInput: textInput.trim() || undefined, 
       userLatitude: userLatitude ?? undefined,
       userLongitude: userLongitude ?? undefined,
     };
@@ -708,7 +703,7 @@ export default function MentalHealthForm() {
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {apiResult.analysis.comprehensiveReportMarkdown}
               </ReactMarkdown>
-            ) : !apiResult?.error ? ( // Only show "No plan" if there wasn't an explicit error displayed
+            ) : !apiResult?.error ? ( 
               <p className="text-blue-700">No intervention plan available or an error occurred.</p>
             ) : null}
           </CardContent>
@@ -752,7 +747,7 @@ export default function MentalHealthForm() {
           </div>
         )}
   
-        {error && currentStep !== 'results' && ( // Don't show global error if result page has its own error display
+        {error && currentStep !== 'results' && ( 
           <Alert variant="destructive" className="animate-in slide-in-from-top duration-300">
             <AlertCircle className="h-5 w-5" />
             <AlertTitle>Input Error</AlertTitle>

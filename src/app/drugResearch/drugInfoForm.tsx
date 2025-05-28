@@ -7,7 +7,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertCircle, Pill, IndianRupee, Users, Clock, AlertTriangle } from 'lucide-react';
 
-// Updated types to match the new API response
 interface DrugInfo {
   drugName: string;
   genericAlternatives: string[];
@@ -21,7 +20,7 @@ interface DrugInfo {
   standardPriceINR: string;
   usageInstructions: string;
   specialistRecommendation: string;
-  imageUrl?: string; // Added for medicine images
+  imageUrl?: string;
 }
 
 interface DrugResponse {
@@ -47,7 +46,6 @@ export function DrugInfoForm() {
     setResult(null);
 
     try {
-      // Parse the input into an array of drug names
       const drugsArray = drugInput
         .split(',')
         .map(drug => drug.trim())
@@ -131,7 +129,6 @@ export function DrugInfoForm() {
       </Card>
     </div>
   
-    {/* Error Alert */}
     {error && (
       <Alert variant="destructive" className="shadow-lg bg-red-500/20 backdrop-blur border border-red-400/30 text-white">
         <AlertCircle className="h-5 w-5" />
@@ -140,7 +137,6 @@ export function DrugInfoForm() {
       </Alert>
     )}
   
-    {/* Drug Info Results */}
     {result && (
       <div className="space-y-10 animate-in fade-in duration-700">
         {result.drugs.map((drug, index) => (

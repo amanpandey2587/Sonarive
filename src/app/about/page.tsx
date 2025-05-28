@@ -2,7 +2,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Users, Target, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 
-// Type declarations for external libraries
 declare global {
   interface Window {
     AOS: {
@@ -21,7 +20,6 @@ const AboutPage = () => {
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize AOS (Animate On Scroll) - moved to a safer approach
     const initAOS = () => {
       if (typeof window !== 'undefined' && window.AOS) {
         window.AOS.init({
@@ -34,7 +32,6 @@ const AboutPage = () => {
       }
     };
 
-    // Load AOS
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js';
     script.onload = initAOS;
@@ -46,7 +43,6 @@ const AboutPage = () => {
     link.rel = 'stylesheet';
     document.head.appendChild(link);
 
-    // Initialize Lenis for smooth scrolling - with error handling
     const initLenis = () => {
       if (typeof window !== 'undefined' && window.Lenis) {
         const lenis = new window.Lenis({
@@ -69,7 +65,6 @@ const AboutPage = () => {
     lenisScript.onerror = () => console.warn('Lenis failed to load');
     document.head.appendChild(lenisScript);
 
-    // Parallax effect for background elements
     const handleScroll = () => {
       const scrolled = window.pageYOffset;
       const orbs = document.querySelectorAll('.parallax-orb');
@@ -82,10 +77,8 @@ const AboutPage = () => {
 
     window.addEventListener('scroll', handleScroll);
     
-    // Cleanup function
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      // Remove scripts if needed
       const scripts = document.querySelectorAll('script[src*="aos"], script[src*="lenis"]');
       scripts.forEach(script => script.remove());
       const links = document.querySelectorAll('link[href*="aos"]');
@@ -110,7 +103,6 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-teal-900 relative overflow-hidden">
-      {/* Animated background elements with parallax */}
       <div className="absolute inset-0 overflow-hidden">
         <FloatingOrb className="parallax-orb -top-40 -right-40 w-96 h-96 bg-blue-500/30" delay={0} />
         <FloatingOrb className="parallax-orb top-1/2 -left-40 w-80 h-80 bg-teal-500/25" delay={2} />
@@ -118,12 +110,9 @@ const AboutPage = () => {
         <FloatingOrb className="parallax-orb top-1/4 right-1/4 w-64 h-64 bg-indigo-500/15" delay={3} />
       </div>
 
-      {/* Gradient mesh overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-900/20 to-teal-900/30 pointer-events-none" />
 
-      {/* Main content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-        {/* Hero Section */}
         <div ref={heroRef} className="text-center mb-32">
           <div 
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-blue-200 mb-8 hover:bg-white/15 transition-all duration-500 hover:scale-105 hover:border-white/30"
@@ -154,7 +143,6 @@ const AboutPage = () => {
           </p>
         </div>
 
-        {/* Mission Section with enhanced animations */}
         <div ref={missionRef} className="grid lg:grid-cols-2 gap-20 items-center mb-32">
           <div data-aos="fade-right" data-aos-delay="200">
             <div className="group backdrop-blur-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-3xl p-10 shadow-2xl hover:shadow-blue-500/25 transition-all duration-700 hover:scale-[1.02] hover:bg-gradient-to-br hover:from-white/15 hover:to-white/8">
@@ -214,7 +202,6 @@ const AboutPage = () => {
           </div>
         </div>
 
-        {/* Values Section with staggered animations */}
         <div ref={valuesRef} className="mb-32">
           <div className="text-center mb-20" data-aos="fade-up">
             <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
@@ -275,10 +262,8 @@ const AboutPage = () => {
           </div>
         </div>
 
-        {/* Enhanced CTA Section */}
         <div ref={ctaRef} className="text-center" data-aos="fade-up" data-aos-delay="200">
           <div className="relative backdrop-blur-2xl bg-gradient-to-r from-blue-500/25 to-teal-500/25 border border-white/25 rounded-3xl p-16 shadow-2xl hover:shadow-blue-500/30 transition-all duration-700 overflow-hidden">
-            {/* Animated background pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
             </div>

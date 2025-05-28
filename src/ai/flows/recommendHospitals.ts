@@ -3,7 +3,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-// Input Schema
 const RecommendHospitalsInputSchema = z.object({
   diagnosedConditions: z.array(z.string()).optional().describe('List of diagnosed conditions.'),
   symptoms: z.array(z.string()).optional().describe('List of symptoms described by the user.'),
@@ -14,13 +13,11 @@ const RecommendHospitalsInputSchema = z.object({
 });
 export type RecommendHospitalsInput = z.infer<typeof RecommendHospitalsInputSchema>;
 
-// Coordinates Schema
 const HospitalCoordinatesSchema = z.object({
   lat: z.number().describe('Latitude of the hospital'),
   lng: z.number().describe('Longitude of the hospital'),
 });
 
-// Recommendation Schema
 const HospitalRecommendationSchema = z.object({
   hospitalName: z.string().describe("Name of the recommended hospital."),
   specializationFocus: z.string().describe('Relevant specializations for the diagnosed conditions or symptoms.'),
@@ -31,14 +28,12 @@ const HospitalRecommendationSchema = z.object({
 });
 export type HospitalRecommendation = z.infer<typeof HospitalRecommendationSchema>;
 
-// Output Schema
 const RecommendHospitalsOutputSchema = z.object({
   recommendationIntro: z.string().describe('A short introduction to the recommendations.'),
   hospitals: z.array(HospitalRecommendationSchema).describe('List of recommended hospitals.'),
 });
 export type RecommendHospitalsOutput = z.infer<typeof RecommendHospitalsOutputSchema>;
 
-// AI Prompt Definition
 const prompt = ai.definePrompt({
   name: 'recommendHospitalsPrompt',
   input: { schema: RecommendHospitalsInputSchema },
@@ -84,7 +79,6 @@ Ensure the list is meaningful, diverse, and data-backed. Go beyond generic answe
 `
 });
 
-// Flow Function
 const recommendHospitalsFlow = ai.defineFlow(
   {
     name: 'recommendHospitalsFlow',
@@ -107,7 +101,6 @@ const recommendHospitalsFlow = ai.defineFlow(
   }
 );
 
-// Exported Handler Function
 export async function recommendHospitals(input: RecommendHospitalsInput): Promise<RecommendHospitalsOutput> {
   return recommendHospitalsFlow(input);
 }

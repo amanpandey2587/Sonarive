@@ -106,7 +106,7 @@ Only return the JSON and nothing else.
       }
   
       try {
-        const parsed = JSON.parse(cleanedOutput); // Validate it is a JSON object
+        const parsed = JSON.parse(cleanedOutput); 
         return NextResponse.json({ data: parsed }, { status: 200 });
       } catch (parseError) {
         console.error('JSON parsing error:', parseError);

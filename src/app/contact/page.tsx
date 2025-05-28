@@ -8,7 +8,6 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     alert('Email sent successfully!');
@@ -17,7 +16,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -25,7 +23,6 @@ export default function ContactPage() {
         <div className="absolute bottom-1/4 left-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-3000"></div>
       </div>
 
-      {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <div
@@ -42,7 +39,6 @@ export default function ContactPage() {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 min-h-screen flex flex-col">
-        {/* Page Header */}
         <div className="text-center mb-16 animate-fade-in">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-slate-200 via-blue-200 to-indigo-200 bg-clip-text text-transparent drop-shadow-lg">
             Reach Out to Us
@@ -52,20 +48,14 @@ export default function ContactPage() {
           </p>
         </div>
 
-        {/* Contact Form */}
         <div className="flex justify-center items-center flex-1">
           <div className="w-full max-w-lg">
-            {/* Glassmorphic Card */}
             <div className="group relative">
-              {/* Glow Effect */}
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-teal-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
               
-              {/* Main Card */}
               <div className="relative backdrop-blur-xl bg-gradient-to-br from-slate-800/30 via-blue-900/20 to-indigo-900/30 border border-white/10 rounded-3xl p-8 shadow-2xl transition-all duration-300 hover:shadow-blue-500/10 hover:border-white/20 hover:-translate-y-2">
-                {/* Subtle Inner Glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 rounded-3xl"></div>
                 
-                {/* Shimmer Effect */}
                 <div className="absolute inset-0 -top-40 bg-gradient-to-r from-transparent via-white/5 to-transparent rotate-12 transform scale-x-150 transition-all duration-1000 group-hover:top-40"></div>
                 
                 <div className="relative z-10">
@@ -88,7 +78,6 @@ export default function ContactPage() {
                           className="w-full px-4 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-slate-300/60 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all duration-300 hover:bg-white/15 hover:border-white/30"
                           required
                         />
-                        {/* Input Glow Effect */}
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-teal-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
                       </div>
                     </div>
@@ -116,14 +105,12 @@ export default function ContactPage() {
                     </button>
                   </div>
 
-                  {/* Decorative Elements */}
                   <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-blue-400/20 to-teal-400/20 rounded-full blur-xl"></div>
                   <div className="absolute bottom-4 left-4 w-8 h-8 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-lg"></div>
                 </div>
               </div>
             </div>
 
-            {/* Additional Info */}
             <div className="text-center mt-8 space-y-2">
               <p className="text-slate-400/80 text-sm">
                 We typically respond within 24 hours

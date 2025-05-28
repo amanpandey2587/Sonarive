@@ -130,7 +130,7 @@ Important:
             content: prompt,
           },
         ],
-        temperature: 0.1, // Lower temperature for more factual responses
+        temperature: 0.1, 
         max_tokens: 2000,
       }),
     });
@@ -154,17 +154,14 @@ Important:
       }, { status: 500 });
     }
 
-    // Enhanced JSON extraction and parsing
     let cleanedOutput = replyText.trim();
 
-    // First, try to extract JSON from code blocks
     const jsonBlockMatch = cleanedOutput.match(/```json\s*([\s\S]*?)\s*```/) || 
                           cleanedOutput.match(/```\s*([\s\S]*?)\s*```/);
 
     if (jsonBlockMatch) {
       cleanedOutput = jsonBlockMatch[1].trim();
     } else {
-      // If no code blocks, try to find JSON object starting with {
       const jsonStartIndex = cleanedOutput.indexOf('{');
       const jsonEndIndex = cleanedOutput.lastIndexOf('}');
       
@@ -180,10 +177,9 @@ Important:
       parsed = RecommendHospitalsOutputSchema.parse(jsonData);
     } catch (parseError: any) {
       console.error('Parse error:', parseError);
-      console.error('Raw output:', replyText); // Log original response
-      console.error('Cleaned output:', cleanedOutput); // Log what we tried to parse
+      console.error('Raw output:', replyText);
+      console.error('Cleaned output:', cleanedOutput); 
       
-      // Enhanced fallback response with more specific error handling
       return NextResponse.json({
         recommendationIntro: "Search completed but response formatting encountered an issue. Here's general guidance based on your request:",
         hospitals: [{

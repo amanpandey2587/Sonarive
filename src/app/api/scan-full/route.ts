@@ -74,12 +74,10 @@ export async function POST(req: NextRequest) {
     
     console.log('Input validated:', { disease: input.disease, hasImage: !!input.scanDataUri })
 
-    // Step 1: Analyze the medical scan
     console.log('Analyzing medical scan...')
     const scanResult = await analyzeMedicalScan({ scanDataUri: input.scanDataUri })
     console.log('Scan analysis complete:', scanResult)
 
-    // Step 2: Generate integrated report using scan findings
     const prompt = buildDiagnosisPrompt(input, scanResult)
     console.log('Generated prompt for integrated analysis')
 
@@ -120,12 +118,10 @@ export async function POST(req: NextRequest) {
     
     console.log('Raw response from Sonar:', rawText.substring(0, 200) + '...')
 
-    // Clean up the response
     if (rawText.startsWith('```json') || rawText.startsWith('```')) {
       rawText = rawText.replace(/```json|```/g, '').trim()
     }
 
-    // Remove any text before the first { and after the last }
     const firstBrace = rawText.indexOf('{')
     const lastBrace = rawText.lastIndexOf('}')
     
@@ -136,7 +132,6 @@ export async function POST(req: NextRequest) {
     try {
       const parsed = JSON.parse(rawText)
       
-      // Ensure the response includes the original scan findings
       if (parsed.radiology && scanResult.findings) {
         parsed.radiology.originalScanFindings = scanResult.findings
         parsed.radiology.originalScanSummary = scanResult.summary
@@ -145,7 +140,7 @@ export async function POST(req: NextRequest) {
       console.log('Successfully generated integrated report')
       return NextResponse.json({ 
         data: parsed,
-        scanAnalysis: scanResult // Include original scan analysis for reference
+        scanAnalysis: scanResult 
       }, { status: 200 })
       
     } catch (jsonErr) {
@@ -155,7 +150,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ 
         error: 'Invalid JSON received from AI', 
         raw: rawText,
-        scanAnalysis: scanResult // Still return scan analysis even if report generation fails
+        scanAnalysis: scanResult 
       }, { status: 500 })
     }
 

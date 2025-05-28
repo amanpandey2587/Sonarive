@@ -10,7 +10,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, AlertCircle, CheckCircle, Sparkles, ListChecks, MapPin, LocateFixed, Search } from 'lucide-react';
 import { GoogleMap, LoadScriptNext, MarkerF, InfoWindowF } from '@react-google-maps/api';
 
-// Type definitions based on the API schema
 interface HospitalCoordinates {
   lat: number;
   lng: number;
@@ -312,10 +311,8 @@ export function HospitalRecsForm() {
                       center={mapCenter}
                       zoom={userLatitude && userLongitude ? 10 : 4}
                       onLoad={(map) => {
-                        // You can interact with the map instance here if needed
                       }}
                     >
-                      {/* User location marker (blue dot) */}
                       {userLatitude && userLongitude && (
                         <MarkerF
                           position={{ lat: userLatitude, lng: userLongitude }}
@@ -338,7 +335,6 @@ export function HospitalRecsForm() {
                         />
                       )}
                       
-                      {/* Hospital markers (indigo/blue) */}
                       {result.hospitals.map((hospital, index) =>
                         hospital.coordinates ? (
                           <MarkerF

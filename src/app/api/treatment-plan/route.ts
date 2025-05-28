@@ -144,13 +144,11 @@ export async function POST(req: NextRequest) {
       cleanedOutput = cleanedOutput.replace(/```json|```/g, "").trim()
     }
 
-    // Additional cleanup for common formatting issues
     cleanedOutput = cleanedOutput.replace(/^[^{]*/, '').replace(/[^}]*$/, '')
 
     try {
       const parsed = JSON.parse(cleanedOutput)
       
-      // Validate the parsed response has required fields
       const requiredFields = ['condition', 'patient', 'summary']
       const missingFields = requiredFields.filter(field => !parsed[field])
       

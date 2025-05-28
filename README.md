@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Sonarive - AI-Powered Health Assistant
 
-## Getting Started
+Sonarive is an intelligent, AI-first healthcare assistant designed to deliver real-time insights for mental and physical well-being. It leverages **Perplexity Sonar**, **Google Gemini**, and clinical protocols (PHQ-9, GAD-7) to offer mental health analysis, medical diagnosis, second opinions, drug research, and scan-based anomaly detection—all in one unified interface.
 
-First, run the development server:
+Built with **Next.js**, **Tailwind CSS**, **Clerk**, and powerful external APIs, Sonarive empowers users in underserved or remote areas and reduces diagnostic friction.
+
+---
+
+## ✨ Features
+
+### 🧠 Mental Health Analysis *(Key Feature)*
+- Uses clinically validated **PHQ-9** and **GAD-7** scoring
+- Combines scores with user insights (demographics, thoughts)
+- Suggests urgency levels and next steps with AI reasoning
+
+### 🖼️ Scan Analysis *(Key Feature)*
+- Users upload CT, MRI, or X-ray scans
+- Gemini model detects anomalies and recommends further action
+- AI-generated medical insights reduce time to next steps
+
+### 🧾 Treatment Planner
+- Collects user symptoms and context
+- AI suggests possible conditions using Sonar reasoning
+- Helps users understand their health before a hospital visit
+
+### 💊 Drug Research Assistant
+- Provides drug details: use cases, side effects, generics
+- Combines real-time data exploration with conversational AI
+
+### ✅ Second Opinion on Treatment Plans
+- Users input treatment plans
+- AI compares with best practices and literature
+- Offers helpful alternative suggestions or validations
+
+### 🏥 Smart Hospital Recommendations
+- Location-based hospital suggestions for specific medical needs
+- Uses Google Maps API + demographic filtering
+
+---
+
+## 🚧 Tech Stack
+
+| Category         | Technology                             |
+|------------------|----------------------------------------|
+| Framework        | Next.js                                |
+| Styling          | Tailwind CSS                           |
+| Authentication   | Clerk                                  |
+| AI & Reasoning   | Perplexity Sonar, Google Gemini       |
+| Maps             | Google Maps API                        |
+| Backend          | Node.js, Express                       |
+| Deployment       | Vercel                                 |
+
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/sonarive.git
+cd sonarive
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
+```
+
+Create a `.env` file in the root directory:
+
+```env
+CLERK_SECRET_KEY=your_clerk_secret_key
+SONAR_API_KEY=your_perplexity_sonar_api_key
+GEMINI_API_KEY=your_google_gemini_api_key
+```
+
+### 4. Run Locally
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Deployment
 
-## Learn More
+**Live Demo:** [https://sonarive.vercel.app/](https://sonarive.vercel.app/)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---

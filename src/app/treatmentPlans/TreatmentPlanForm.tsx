@@ -60,7 +60,6 @@ export default function TreatmentPlanForm() {
     setError(null);
     setResult(null);
 
-    // Simulate API call with mock data
     try {
       await new Promise(resolve => setTimeout(resolve, 3000));
       
@@ -128,7 +127,6 @@ export default function TreatmentPlanForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-900 via-indigo-900 to-blue-950 p-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
         <div className="text-center py-8">
           <h1 className="text-4xl font-bold text-white mb-4 flex items-center justify-center gap-3">
             <Stethoscope className="h-10 w-10 text-teal-300" />
@@ -137,7 +135,6 @@ export default function TreatmentPlanForm() {
           <p className="text-teal-100 text-lg">Advanced AI-Powered Treatment Planning</p>
         </div>
 
-        {/* Main Form Card */}
         <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-2xl">
           <CardHeader className="pb-6">
             <CardTitle className="text-2xl flex items-center gap-2 text-white">
@@ -240,7 +237,6 @@ export default function TreatmentPlanForm() {
           </CardContent>
         </Card>
 
-        {/* Loading Progress Indicator */}
         {isLoading && (
           <Card className="backdrop-blur-md bg-teal-500/20 border-teal-300/30 shadow-2xl">
             <CardContent className="pt-6">
@@ -262,7 +258,6 @@ export default function TreatmentPlanForm() {
           </Card>
         )}
 
-        {/* Error Alert */}
         {error && (
           <Alert className="backdrop-blur-md bg-red-500/20 border-red-300/30 shadow-xl">
             <AlertCircle className="h-5 w-5 text-red-300" />
@@ -271,7 +266,6 @@ export default function TreatmentPlanForm() {
           </Alert>
         )}
 
-        {/* Results */}
         {result && (
           <Card className="backdrop-blur-md bg-white/10 border-white/20 shadow-2xl animate-in fade-in duration-500">
             <CardHeader className="pb-6">
@@ -382,7 +376,6 @@ export default function TreatmentPlanForm() {
   );
 }
 
-// Enhanced Section component
 interface SectionProps {
   title: string;
   content?: string | null;

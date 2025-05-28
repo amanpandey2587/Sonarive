@@ -16,7 +16,6 @@ const publicNavItems = [
   { label: 'FAQ', href: '/faq' },
 ];
 
-// Navigation items visible only to authenticated users
 const authenticatedNavItems = [
   { label: 'Scan Analysis', href: '/scan' },
   { label: 'Mental Health Analysis', href: '/mentalHealth' },
@@ -31,9 +30,8 @@ export function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const { isSignedIn, isLoaded } = useAuth();
 
-  // Combine navigation items based on authentication status
   const navItems = React.useMemo(() => {
-    if (!isLoaded) return publicNavItems; // Show only public items while loading
+    if (!isLoaded) return publicNavItems; 
     return isSignedIn ? [...publicNavItems, ...authenticatedNavItems] : publicNavItems;
   }, [isSignedIn, isLoaded]);
 
@@ -41,7 +39,6 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white border-b border-white/10">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +55,6 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
           <nav className="hidden ml-4 md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -76,7 +72,6 @@ export function Navbar() {
               </Link>
             ))}
             
-            {/* Authentication Button */}
             {isLoaded && (
               <>
                 {isSignedIn ? (
@@ -99,7 +94,6 @@ export function Navbar() {
             )}
           </nav>
 
-          {/* Mobile Nav */}
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
@@ -143,7 +137,6 @@ export function Navbar() {
                     </Link>
                   ))}
                   
-                  {/* Mobile Authentication Button */}
                   {isLoaded && (
                     <>
                       {isSignedIn ? (

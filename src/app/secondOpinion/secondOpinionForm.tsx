@@ -98,13 +98,11 @@ export default function SecondOpinionForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-600 via-indigo-600 to-blue-600 p-4">
-      {/* Background Pattern */}
       <div className="fixed inset-0 bg-gradient-to-br from-teal-500/10 via-indigo-500/10 to-blue-500/10 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(14,165,233,0.1)_1px,transparent_0)] bg-[length:20px_20px]"></div>
       </div>
 
       <div className="relative max-w-4xl mx-auto space-y-8">
-        {/* Header Card */}
         <Card className="backdrop-blur-lg bg-white/30 border border-white/20 shadow-2xl shadow-teal-500/10">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -121,7 +119,6 @@ export default function SecondOpinionForm() {
           </CardHeader>
         </Card>
 
-        {/* Form Card */}
         <Card className="backdrop-blur-lg bg-white/40 border border-white/30 shadow-2xl shadow-indigo-500/10">
           <CardHeader>
             <CardTitle className="text-2xl flex items-center gap-3 bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">
@@ -224,7 +221,6 @@ export default function SecondOpinionForm() {
           </CardContent>
         </Card>
 
-        {/* Error Alert */}
         {error && (
           <Alert className="backdrop-blur-lg bg-red-50/80 border border-red-200/50 shadow-lg">
             <AlertCircle className="h-5 w-5 text-red-600" />
@@ -233,7 +229,6 @@ export default function SecondOpinionForm() {
           </Alert>
         )}
         
-        {/* Results Card */}
         {result && (
           <Card className="backdrop-blur-lg bg-white/40 border border-white/30 shadow-2xl shadow-blue-500/10 animate-in fade-in duration-700">
             <CardHeader>
@@ -246,14 +241,12 @@ export default function SecondOpinionForm() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Assessment Section */}
               <Section 
                 title="Current Treatment Assessment" 
                 content={result.assessment}
                 icon={<Activity className="h-5 w-5" />}
               />
               
-              {/* Recommendations */}
               {result.recommendations.adjustments.length > 0 && (
                 <Section 
                   title="Recommended Adjustments" 
@@ -281,14 +274,12 @@ export default function SecondOpinionForm() {
                 />
               )}
               
-              {/* Clinical Justification */}
               <Section 
                 title="Clinical Justification" 
                 content={result.justification}
                 icon={<MessageSquareHeart className="h-5 w-5" />}
               />
               
-              {/* Warnings */}
               {result.warnings.length > 0 && (
                 <div className="p-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 backdrop-blur-sm">
                   <h3 className="text-lg font-semibold text-amber-800 mb-3 flex items-center gap-2">
@@ -313,7 +304,6 @@ export default function SecondOpinionForm() {
   );
 }
 
-// Helper component for sections
 interface SectionProps {
   title: string;
   content?: string;
