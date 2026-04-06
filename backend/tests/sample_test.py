@@ -20,5 +20,6 @@ def test_symptom_check_returns_something():
         "/api/treatment/symptom-check",
         json={"symptoms": "fever headache fatigue"}
     )
+    print("heelo")
     assert response.status_code in [200, 422, 500]  # just confirm it responds
     assert response is not None
