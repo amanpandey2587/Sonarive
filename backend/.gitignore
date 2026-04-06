@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.env.example
+mindsignal_db/
+.virtual_documents/
+.langgraph_api/
+logs/
+*.log
