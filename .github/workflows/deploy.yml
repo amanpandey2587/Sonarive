@@ -5,7 +5,6 @@ on:
     branches: [main]
 
 jobs:
-  # ── 1. ML Quality Gate ──────────────────────────────────────
   ml-gate:
     runs-on: ubuntu-latest
     steps:
@@ -16,7 +15,6 @@ jobs:
       - name: Check model accuracy gate
         run: python backend/scripts/check_model_gate.py
 
-  # ── 2. Backend Tests ────────────────────────────────────────
   test-backend:
     needs: ml-gate
     runs-on: ubuntu-latest
@@ -26,11 +24,10 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r backend/requirements.txt
-        env:
-            GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       - run: pytest backend/tests/ -v
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}  # ✅ moved here
 
-  # ── 3. Docker Build ─────────────────────────────────────────
   build:
     needs: test-backend
     runs-on: ubuntu-latest
@@ -39,14 +36,17 @@ jobs:
       - name: Build backend image
         run: docker build -t sonarive-backend ./backend
       - name: Build frontend image
-        run: docker build -t sonarive-frontend -f Dockerfile.frontend .
+        run: docker build -t sonarive-frontend -f Dockerfile.frontend .  # ✅ verify path
       - name: Smoke test backend
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}  # ✅ added
         run: |
-          docker run -d -p 8000:8000 sonarive-backend
+          docker run -d -p 8000:8000 \
+            -e GROQ_API_KEY=${{ secrets.GROQ_API_KEY }} \
+            sonarive-backend
           sleep 5
           curl -f http://localhost:8000/health
 
-  # ── 4. Deploy ───────────────────────────────────────────────
   deploy:
     needs: build
     runs-on: ubuntu-latest
