@@ -55,6 +55,7 @@ def create_app() -> FastAPI:
         allow_methods=['*'],
         allow_headers=['*'],
     )
+    
     register_exception_handlers(app)
     app.include_router(system_router)
     app.include_router(mental_health_router)
