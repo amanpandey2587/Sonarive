@@ -1,0 +1,54 @@
+name: Sonarive — DevOps for AI Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ── 1. ML Quality Gate ──────────────────────────────────────
+  ml-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Check model accuracy gate
+        run: python backend/scripts/check_model_gate.py
+
+  # ── 2. Backend Tests ────────────────────────────────────────
+  test-backend:
+    needs: ml-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - run: pip install -r backend/requirements.txt
+      - run: pytest backend/tests/ -v
+
+  # ── 3. Docker Build ─────────────────────────────────────────
+  build:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build backend image
+        run: docker build -t sonarive-backend ./backend
+      - name: Build frontend image
+        run: docker build -t sonarive-frontend -f Dockerfile.frontend .
+      - name: Smoke test backend
+        run: |
+          docker run -d -p 8000:8000 sonarive-backend
+          sleep 5
+          curl -f http://localhost:8000/health
+
+  # ── 4. Deploy ───────────────────────────────────────────────
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy
+        run: echo "🚀 Point this to your server/cloud"

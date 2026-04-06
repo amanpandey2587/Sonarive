@@ -1,21 +1,13 @@
-import { PageContainer } from '@/components/ui/common/pageContainer'
-import { PageHeader } from '@/components/ui/common/pageHeader'
-import React from 'react'
-import MentalHealthForm from './mentalHealthForm'
-const mentalHealthPage = () => {
-  return (
-    <div className='bg-gradient-to-br from-teal-900 via-indigo-900 to-blue-950'>
-        <PageContainer className='w-full'>
-            <PageHeader
-            title="Mental Wellness Check-in"
-            description="Reflect on your thoughts and feelings."
-            />
-            <div className='max-w-3xl mx-auto mt-10'>
-                <MentalHealthForm/>
-            </div>
-        </PageContainer>      
-    </div>
-  )
-}
+﻿import React from 'react';
+import { PageContainer } from '@/components/ui/common/pageContainer';
+import { PageHeader } from '@/components/ui/common/pageHeader';
+import MentalHealthForm from './mentalHealthForm';
 
-export default mentalHealthPage
+export default function MentalHealthPage() {
+  return (
+    <PageContainer className="space-y-8">
+      <PageHeader eyebrow="mental wellness" title="Check in, score symptoms, and get a structured support plan." description="This flow combines demographic context, optional narrative intake, PHQ-9, and GAD-7 responses into a single markdown report with safety framing and practical next steps." />
+      <MentalHealthForm />
+    </PageContainer>
+  );
+}

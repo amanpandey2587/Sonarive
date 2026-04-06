@@ -1,12 +1,12 @@
-'use client';
+﻿'use client';
 
 import { useState, type FormEvent } from 'react';
+import { AlertCircle, ClipboardCheck, FlaskConical, ShieldAlert, Stethoscope } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertCircle, Users, MessageSquareHeart, Activity, Stethoscope } from 'lucide-react';
+import { buildApiUrl } from '@/lib/backend-url';
 
 interface SecondOpinionInput {
   disease: string;
@@ -17,10 +17,7 @@ interface SecondOpinionInput {
 
 interface SecondOpinionResponse {
   condition: string;
-  patient: {
-    age: number;
-    gender: string;
-  };
+  patient: { age: number; gender: string };
   currentTreatment: string;
   assessment: string;
   recommendations: {
@@ -37,22 +34,16 @@ export default function SecondOpinionForm() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
   const [medicationWithDosages, setMedicationWithDosages] = useState('');
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SecondOpinionResponse | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    if (!disease.trim() || !age.trim() || !medicationWithDosages.trim()) {
-      setError('Please fill in all required fields.');
-      return;
-    }
+    const ageNum = Number.parseInt(age, 10);
 
-    const ageNum = parseInt(age);
-    if (isNaN(ageNum) || ageNum < 0 || ageNum > 150) {
-      setError('Please enter a valid age between 0 and 150.');
+    if (!disease.trim() || !medicationWithDosages.trim() || Number.isNaN(ageNum)) {
+      setError('Complete the diagnosis, age, and medication fields before requesting a second opinion.');
       return;
     }
 
@@ -68,279 +59,128 @@ export default function SecondOpinionForm() {
         medicationWithDosages: medicationWithDosages.trim(),
       };
 
-      const response = await fetch('/api/second-opinion', {
+      const response = await fetch(buildApiUrl('/api/second-opinion'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       const responseData = await response.json();
-
       if (!response.ok) {
-        setError(responseData.error || 'Failed to get second opinion');
-        return;
+        throw new Error(responseData.error || 'Second opinion request failed.');
       }
 
-      if (responseData.data) {
-        setResult(responseData.data);
-      } else {
-        setError('No second opinion data returned from the service.');
+      if (!responseData.data) {
+        throw new Error('No structured opinion was returned.');
       }
-    } catch (e: any) {
-      setError('An unexpected error occurred: ' + (e.message || 'Please try again.'));
-      console.error(e);
+
+      setResult(responseData.data);
+    } catch (caught) {
+      const err = caught as Error;
+      setError(err.message || 'Unable to generate second opinion.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-600 via-indigo-600 to-blue-600 p-4">
-      <div className="fixed inset-0 bg-gradient-to-br from-teal-500/10 via-indigo-500/10 to-blue-500/10 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(14,165,233,0.1)_1px,transparent_0)] bg-[length:20px_20px]"></div>
-      </div>
+    <div className="grid gap-6">
+      <form onSubmit={handleSubmit} className="soft-panel p-6 sm:p-8">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="space-y-3 lg:col-span-2">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Patient snapshot</p>
+            <h2 className="text-3xl text-foreground">Request a structured treatment review</h2>
+          </div>
 
-      <div className="relative max-w-4xl mx-auto space-y-8">
-        <Card className="backdrop-blur-lg bg-white/30 border border-white/20 shadow-2xl shadow-teal-500/10">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-4 rounded-full bg-gradient-to-br from-teal-500 to-indigo-600 shadow-lg">
-                <Stethoscope className="h-8 w-8 text-white" />
+          <Input value={disease} onChange={(event) => setDisease(event.target.value)} placeholder="Diagnosed condition" disabled={isLoading} />
+          <Input type="number" min="0" max="150" value={age} onChange={(event) => setAge(event.target.value)} placeholder="Age" disabled={isLoading} />
+
+          <select value={gender} onChange={(event) => setGender(event.target.value as 'male' | 'female' | 'other')} className="h-11 rounded-full border border-input bg-background px-4 text-sm" disabled={isLoading}>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+
+          <div className="rounded-full border border-border/70 bg-secondary/70 px-4 text-sm text-muted-foreground flex items-center">Include exact medicine names and dosages for better output.</div>
+
+          <Textarea value={medicationWithDosages} onChange={(event) => setMedicationWithDosages(event.target.value)} className="min-h-36 rounded-[24px] border-border/80 bg-background/70 lg:col-span-2" placeholder="Metformin 500mg twice daily, Lisinopril 10mg once daily" disabled={isLoading} />
+
+          <Button type="submit" className="rounded-full px-6 py-6 text-base lg:col-span-2" disabled={isLoading}>
+            {isLoading ? 'Reviewing treatment...' : 'Generate second opinion'}
+          </Button>
+        </div>
+      </form>
+
+      {error && (
+        <Alert variant="destructive" className="rounded-[24px]">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Second opinion failed</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {result && (
+        <section className="grid gap-4">
+          <article className="soft-panel p-6 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Assessment</p>
+            <h3 className="mt-2 text-4xl text-foreground">{result.condition}</h3>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">Patient: {result.patient.age} years old, {result.patient.gender}. Current treatment: {result.currentTreatment}</p>
+            <div className="mt-5 rounded-[24px] border border-border/70 bg-background/70 p-5">
+              <div className="flex items-center gap-3 text-primary">
+                <ClipboardCheck className="h-5 w-5" />
+                <h4 className="text-2xl text-foreground">Current treatment assessment</h4>
               </div>
+              <p className="mt-3 text-sm leading-7 text-foreground/90">{result.assessment}</p>
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">
-              AI Medical Second Opinion
-            </CardTitle>
-            <CardDescription className="text-slate-600 text-lg">
-              Get a comprehensive second opinion powered by advanced AI research
-            </CardDescription>
-          </CardHeader>
-        </Card>
+          </article>
 
-        <Card className="backdrop-blur-lg bg-white/40 border border-white/30 shadow-2xl shadow-indigo-500/10">
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-3 bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">
-              <Users className="h-7 w-7 text-teal-600" /> Patient Information
-            </CardTitle>
-            <CardDescription className="text-slate-600">
-              Provide patient details to receive a personalized medical second opinion
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="disease" className="block text-sm font-semibold text-slate-700">
-                    Diagnosed Condition <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    id="disease"
-                    type="text"
-                    value={disease}
-                    onChange={(e) => setDisease(e.target.value)}
-                    placeholder="e.g., Type 2 Diabetes, Hypertension"
-                    required
-                    disabled={isLoading}
-                    className="backdrop-blur-sm bg-white/50 border-white/40 focus:border-teal-400 focus:ring-teal-400/20 text-slate-800 placeholder:text-slate-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label htmlFor="age" className="block text-sm font-semibold text-slate-700">
-                      Age <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      placeholder="35"
-                      min="0"
-                      max="150"
-                      required
-                      disabled={isLoading}
-                      className="backdrop-blur-sm bg-white/50 border-white/40 focus:border-teal-400 focus:ring-teal-400/20 text-slate-800"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="gender" className="block text-sm font-semibold text-slate-700">
-                      Gender <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="gender"
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other')}
-                      disabled={isLoading}
-                      className="w-full px-3 py-2 rounded-md backdrop-blur-sm bg-white/50 border border-white/40 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 text-slate-800 focus:outline-none"
-                    >
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <RecommendationBlock title="Recommended adjustments" items={result.recommendations.adjustments} icon={<Stethoscope className="h-4 w-4 text-primary" />} />
+            <RecommendationBlock title="Alternative treatments" items={result.recommendations.alternativeTreatments} icon={<ClipboardCheck className="h-4 w-4 text-primary" />} />
+            <RecommendationBlock title="Additional tests" items={result.recommendations.tests} icon={<FlaskConical className="h-4 w-4 text-primary" />} />
+            <section className="soft-panel p-6">
+              <div className="flex items-center gap-3 text-primary">
+                <ShieldAlert className="h-5 w-5" />
+                <h4 className="text-2xl text-foreground">Warnings and monitoring</h4>
               </div>
+              {result.warnings.length > 0 ? (
+                <ul className="mt-4 space-y-2">
+                  {result.warnings.map((warning) => (
+                    <li key={warning} className="rounded-[18px] bg-background/70 px-4 py-3 text-sm leading-7 text-foreground/90">{warning}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 text-sm leading-7 text-muted-foreground">No warning items were returned.</p>
+              )}
+            </section>
+          </div>
 
-              <div className="space-y-2">
-                <label htmlFor="medication" className="block text-sm font-semibold text-slate-700">
-                  Current Medications & Dosages <span className="text-red-500">*</span>
-                </label>
-                <Textarea
-                  id="medication"
-                  value={medicationWithDosages}
-                  onChange={(e) => setMedicationWithDosages(e.target.value)}
-                  placeholder="e.g., Metformin 500mg twice daily, Lisinopril 10mg once daily"
-                  className="min-h-[100px] backdrop-blur-sm bg-white/50 border-white/40 focus:border-teal-400 focus:ring-teal-400/20 text-slate-800 placeholder:text-slate-500"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
-                className="w-full bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 text-white font-semibold text-lg py-6 shadow-lg shadow-teal-500/25 border-0 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/30"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-3 h-5 w-5 animate-spin" /> 
-                    Analyzing Medical Data...
-                  </>
-                ) : (
-                  <>
-                    <Activity className="mr-3 h-5 w-5" />
-                    Get AI Second Opinion
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {error && (
-          <Alert className="backdrop-blur-lg bg-red-50/80 border border-red-200/50 shadow-lg">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
-            <AlertDescription className="text-red-700">{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        {result && (
-          <Card className="backdrop-blur-lg bg-white/40 border border-white/30 shadow-2xl shadow-blue-500/10 animate-in fade-in duration-700">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-3 bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">
-                <MessageSquareHeart className="h-7 w-7 text-indigo-600" /> 
-                Second Opinion Report
-              </CardTitle>
-              <CardDescription className="text-slate-600 text-lg">
-                Analysis for {result.condition} - Patient: {result.patient.age} years, {result.patient.gender}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <Section 
-                title="Current Treatment Assessment" 
-                content={result.assessment}
-                icon={<Activity className="h-5 w-5" />}
-              />
-              
-              {result.recommendations.adjustments.length > 0 && (
-                <Section 
-                  title="Recommended Adjustments" 
-                  listContent={result.recommendations.adjustments}
-                  icon={<Stethoscope className="h-5 w-5" />}
-                  variant="teal"
-                />
-              )}
-              
-              {result.recommendations.alternativeTreatments.length > 0 && (
-                <Section 
-                  title="Alternative Treatment Options" 
-                  listContent={result.recommendations.alternativeTreatments}
-                  icon={<Users className="h-5 w-5" />}
-                  variant="indigo"
-                />
-              )}
-              
-              {result.recommendations.tests.length > 0 && (
-                <Section 
-                  title="Recommended Additional Tests" 
-                  listContent={result.recommendations.tests}
-                  icon={<AlertCircle className="h-5 w-5" />}
-                  variant="blue"
-                />
-              )}
-              
-              <Section 
-                title="Clinical Justification" 
-                content={result.justification}
-                icon={<MessageSquareHeart className="h-5 w-5" />}
-              />
-              
-              {result.warnings.length > 0 && (
-                <div className="p-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 backdrop-blur-sm">
-                  <h3 className="text-lg font-semibold text-amber-800 mb-3 flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5" /> Important Warnings & Monitoring
-                  </h3>
-                  <ul className="space-y-2">
-                    {result.warnings.map((warning, index) => (
-                      <li key={index} className="flex items-start gap-2 text-amber-700">
-                        <span className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></span>
-                        <span className="text-sm">{warning}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </CardContent>
-            
-          </Card>
-        )}
-      </div>
+          <article className="soft-panel p-6 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Clinical justification</p>
+            <p className="mt-3 text-sm leading-7 text-foreground/90">{result.justification}</p>
+          </article>
+        </section>
+      )}
     </div>
   );
 }
 
-interface SectionProps {
-  title: string;
-  content?: string;
-  listContent?: string[];
-  icon?: React.ReactNode;
-  variant?: 'teal' | 'indigo' | 'blue';
-}
-
-const Section: React.FC<SectionProps> = ({ title, content, listContent, icon, variant = 'teal' }) => {
-  if (!content && (!listContent || listContent.length === 0)) return null;
-  
-  const variantStyles = {
-    teal: 'from-teal-50 to-cyan-50 border-teal-200/50 text-teal-800',
-    indigo: 'from-indigo-50 to-purple-50 border-indigo-200/50 text-indigo-800',
-    blue: 'from-blue-50 to-sky-50 border-blue-200/50 text-blue-800'
-  };
-
+function RecommendationBlock({ title, items, icon }: { title: string; items: string[]; icon: React.ReactNode }) {
   return (
-    <div className={`p-4 rounded-lg bg-gradient-to-r ${variantStyles[variant]} border backdrop-blur-sm`}>
-      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-        {icon} {title}
-      </h3>
-      {content && (
-        <div className="prose prose-sm max-w-none">
-          <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{content}</p>
-        </div>
-      )}
-      {listContent && listContent.length > 0 && (
-        <ul className="space-y-2 mt-2">
-          {listContent.map((item, index) => (
-            <li key={index} className="flex items-start gap-2 text-slate-700">
-              <span className="w-2 h-2 bg-current rounded-full mt-2 flex-shrink-0 opacity-60"></span>
-              <span className="text-sm leading-relaxed">{item}</span>
-            </li>
+    <section className="soft-panel p-6">
+      <div className="flex items-center gap-3 text-primary">
+        {icon}
+        <h4 className="text-2xl text-foreground">{title}</h4>
+      </div>
+      {items.length > 0 ? (
+        <ul className="mt-4 space-y-2">
+          {items.map((item) => (
+            <li key={item} className="rounded-[18px] bg-background/70 px-4 py-3 text-sm leading-7 text-foreground/90">{item}</li>
           ))}
         </ul>
+      ) : (
+        <p className="mt-4 text-sm leading-7 text-muted-foreground">No items were returned for this section.</p>
       )}
-    </div>
+    </section>
   );
-};
+}

@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "hospital_graph": "./app/controllers/discovery/hospital_graph.py:hospital_graph"
+  },
+  "env": ".env"
+}

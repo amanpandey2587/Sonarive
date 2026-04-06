@@ -1,171 +1,102 @@
-'use client'
+﻿'use client'
+import Link from 'next/link';
+import * as React from 'react';
+import { usePathname } from 'next/navigation';
+import { Menu, MoonStar, Stethoscope } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/theme-toggle';
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useAuth, SignInButton, UserButton } from "@clerk/nextjs"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
-import { cn } from "@/lib/utils"
-import * as React from 'react'
-
-const publicNavItems = [
+const navItems = [
   { label: 'Home', href: '/' },
-  { label: 'About Us', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-  { label: 'FAQ', href: '/faq' },
-];
-
-const authenticatedNavItems = [
-  { label: 'Scan Analysis', href: '/scan' },
-  { label: 'Mental Health Analysis', href: '/mentalHealth' },
+  { label: 'About', href: '/about' },
+  { label: 'Scan', href: '/scan' },
+  { label: 'Mental Health', href: '/mentalHealth' },
   { label: 'Drug Research', href: '/drugResearch' },
-  { label: 'Treatment Planner', href: '/treatmentPlans' },
+  { label: 'Treatment Plan', href: '/treatmentPlans' },
   { label: 'Second Opinion', href: '/secondOpinion' },
-  { label: 'Smart Hospitals', href: '/smartHospitals' },
+  { label: 'Hospitals', href: '/smartHospitals' },
+  { label: 'FAQ', href: '/faq' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
-  const { isSignedIn, isLoaded } = useAuth();
-
-  const navItems = React.useMemo(() => {
-    if (!isLoaded) return publicNavItems; 
-    return isSignedIn ? [...publicNavItems, ...authenticatedNavItems] : publicNavItems;
-  }, [isSignedIn, isLoaded]);
+  const [open, setOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white border-b border-white/10">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-              Sonarive
-            </span>
-          </Link>
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link href="/" className="flex items-center gap-3">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+            <Stethoscope className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-lg font-semibold tracking-tight">Sonarive</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">clinical workspace</p>
+          </div>
+        </Link>
 
-          <nav className="hidden ml-4 md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "relative text-sm font-medium text-slate-300 hover:text-white transition-colors",
-                  pathname === item.href && "text-white"
-                )}
-              >
-                <span className="relative z-10">{item.label}</span>
-                {pathname === item.href && (
-                  <span className="absolute left-0 bottom-[-4px] h-[2px] w-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full" />
-                )}
-              </Link>
-            ))}
-            
-            {isLoaded && (
-              <>
-                {isSignedIn ? (
-                  <UserButton 
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-8 h-8"
-                      }
-                    }}
-                  />
-                ) : (
-                  <SignInButton mode="modal">
-                    <Button className="bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                      Sign In
-                    </Button>
-                  </SignInButton>
-                )}
-              </>
-            )}
-          </nav>
+        <nav className="hidden items-center gap-1 xl:flex">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'rounded-full px-3 py-2 text-sm font-medium transition-colors',
+                pathname === item.href ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
-          <div className="md:hidden">
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6 text-white" />
-                  <span className="sr-only">Toggle navigation</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white w-64 p-6">
-                <div className="mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-lg font-semibold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                      Sonarive
-                    </span>
+        <div className="hidden items-center gap-2 xl:flex">
+          <ThemeToggle />
+          <Button asChild className="rounded-full px-5">
+            <Link href="/scan">Open workspace</Link>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 xl:hidden">
+          <ThemeToggle />
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="rounded-full" aria-label="Open navigation">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[320px] bg-card">
+              <div className="mt-8 space-y-6">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                    <MoonStar className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-lg font-semibold">Navigation</p>
+                    <p className="text-sm text-muted-foreground">Move across modules</p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="grid gap-2">
                   {navItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => setIsSheetOpen(false)}
+                      onClick={() => setOpen(false)}
                       className={cn(
-                        "rounded-md px-3 py-2 text-base font-medium transition-colors",
-                        pathname === item.href
-                          ? "bg-white text-black"
-                          : "hover:bg-white/10 hover:text-white"
+                        'rounded-2xl px-4 py-3 text-sm font-medium transition-colors',
+                        pathname === item.href ? 'bg-primary text-primary-foreground' : 'bg-secondary/70 text-foreground hover:bg-secondary'
                       )}
                     >
                       {item.label}
                     </Link>
                   ))}
-                  
-                  {isLoaded && (
-                    <>
-                      {isSignedIn ? (
-                        <div className="mt-4 flex justify-center">
-                          <UserButton 
-                            afterSignOutUrl="/"
-                            appearance={{
-                              elements: {
-                                avatarBox: "w-8 h-8"
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <SignInButton mode="modal">
-                          <Button
-                            onClick={() => setIsSheetOpen(false)}
-                            className="mt-4 w-full bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 text-white shadow"
-                          >
-                            Sign In
-                          </Button>
-                        </SignInButton>
-                      )}
-                    </>
-                  )}
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

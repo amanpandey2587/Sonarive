@@ -1,22 +1,13 @@
-import React from 'react'
-import { PageContainer } from '@/components/ui/common/pageContainer'
-import {DrugInfoForm} from './drugInfoForm'
-import { PageHeader } from '@/components/ui/common/pageHeader'
+﻿import React from 'react';
+import { PageContainer } from '@/components/ui/common/pageContainer';
+import { PageHeader } from '@/components/ui/common/pageHeader';
+import { DrugInfoForm } from './drugInfoForm';
 
-const DrugResearchPage = () => {
+export default function DrugResearchPage() {
   return (
-    <div className='bg-gradient-to-br from-teal-900 via-indigo-900 to-blue-950 gap-y-10'>
-    <PageContainer className='w-full'>
-      <PageHeader
-      title="Drug Information & Research"
-      description="Get AI-powered insights on medications,alternatives ,interactions, and more. "
-      />
-    <div className='max-w-3xl mx-auto mt-10'>
-        <DrugInfoForm/>
-    </div>
+    <PageContainer className="space-y-8">
+      <PageHeader eyebrow="medication research" title="Research a medicine list without leaving the workspace." description="Paste one or more drug names and get structured output covering generics, dosing, common side effects, allergies, and specialist context." />
+      <DrugInfoForm />
     </PageContainer>
-    </div>
-  )
+  );
 }
-
-export default DrugResearchPage

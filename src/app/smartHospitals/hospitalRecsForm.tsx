@@ -1,14 +1,14 @@
-'use client';
+﻿'use client';
 
-import { useState, type FormEvent, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useMemo, useState, type FormEvent } from 'react';
+import { AlertCircle, LocateFixed, MapPin, Search } from 'lucide-react';
+import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, AlertCircle, CheckCircle, Sparkles, ListChecks, MapPin, LocateFixed, Search } from 'lucide-react';
-import { GoogleMap, LoadScriptNext, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { buildApiUrl } from '@/lib/backend-url';
 
 interface HospitalCoordinates {
   lat: number;
@@ -27,87 +27,65 @@ interface HospitalRecommendation {
 interface RecommendHospitalsOutput {
   recommendationIntro: string;
   hospitals: HospitalRecommendation[];
-  disclaimer: string;
+  disclaimer?: string;
 }
 
-interface ApiResponse {
-  error?: string;
-  recommendations?: RecommendHospitalsOutput;
-}
-
-const mapContainerStyle = {
-  width: '100%',
-  height: '400px',
-};
-
-const initialCenter = {
-  lat: 37.0902, 
-  lng: -95.7129,
-};
+const DEFAULT_CENTER: [number, number] = [20.5937, 78.9629];
 
 export function HospitalRecsForm() {
   const [diagnosedConditions, setDiagnosedConditions] = useState('');
   const [symptoms, setSymptoms] = useState('');
-  const [searchRadius, setSearchRadius] = useState(0);
+  const [searchRadius, setSearchRadius] = useState(25);
   const [preferGovernment, setPreferGovernment] = useState(false);
-  
   const [userLatitude, setUserLatitude] = useState<number | null>(null);
   const [userLongitude, setUserLongitude] = useState<number | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RecommendHospitalsOutput | null>(null);
-  const [mapCenter, setMapCenter] = useState(initialCenter);
   const [selectedHospital, setSelectedHospital] = useState<HospitalRecommendation | null>(null);
-  
-  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  useEffect(() => {
-    if (result && result.hospitals && result.hospitals.length > 0) {
-      const firstHospitalWithCoords = result.hospitals.find(h => h.coordinates);
-      if (firstHospitalWithCoords && firstHospitalWithCoords.coordinates) {
-        setMapCenter(firstHospitalWithCoords.coordinates);
-      } else if (userLatitude && userLongitude) {
-        setMapCenter({ lat: userLatitude, lng: userLongitude });
-      }
-    } else if (userLatitude && userLongitude) {
-        setMapCenter({ lat: userLatitude, lng: userLongitude });
-    } else {
-        setMapCenter(initialCenter);
+  const mapCenter = useMemo<[number, number]>(() => {
+    const firstWithCoords = result?.hospitals.find((hospital) => hospital.coordinates);
+    if (firstWithCoords?.coordinates) {
+      return [firstWithCoords.coordinates.lat, firstWithCoords.coordinates.lng];
     }
+    if (userLatitude !== null && userLongitude !== null) {
+      return [userLatitude, userLongitude];
+    }
+    return DEFAULT_CENTER;
   }, [result, userLatitude, userLongitude]);
 
   const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      setIsGettingLocation(true);
-      setLocationError(null);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLatitude(position.coords.latitude);
-          setUserLongitude(position.coords.longitude);
-          setIsGettingLocation(false);
-          setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
-        },
-        (err) => {
-          setLocationError(`Error getting location: ${err.message}. Please ensure location services are enabled.`);
-          setIsGettingLocation(false);
-        }
-      );
-    } else {
+    if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by this browser.');
+      return;
     }
+
+    setIsGettingLocation(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLatitude(position.coords.latitude);
+        setUserLongitude(position.coords.longitude);
+        setIsGettingLocation(false);
+      },
+      (positionError) => {
+        setLocationError(positionError.message);
+        setIsGettingLocation(false);
+      }
+    );
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    const conditionsArray = diagnosedConditions.split(',').map(c => c.trim()).filter(c => c.length > 0);
-    const symptomsArray = symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    
-    if (conditionsArray.length === 0 && symptomsArray.length === 0) {
-      setError('Please enter either diagnosed conditions or symptoms.');
+    const conditionsArray = diagnosedConditions.split(',').map((item) => item.trim()).filter(Boolean);
+    const symptomsArray = symptoms.split(',').map((item) => item.trim()).filter(Boolean);
+
+    if (!conditionsArray.length && !symptomsArray.length) {
+      setError('Enter either a known diagnosis or a symptom list before searching.');
       return;
     }
 
@@ -120,342 +98,157 @@ export function HospitalRecsForm() {
       const requestBody = {
         ...(conditionsArray.length > 0 && { diagnosedConditions: conditionsArray }),
         ...(symptomsArray.length > 0 && { symptoms: symptomsArray }),
-        ...(userLatitude !== null && userLongitude !== null && {
-          userLatitude,
-          userLongitude,
-          searchRadiusKm: searchRadius,
-        }),
+        ...(userLatitude !== null && userLongitude !== null && { userLatitude, userLongitude, searchRadiusKm: searchRadius }),
         preferGovernmentHospitals: preferGovernment,
       };
 
-      const response = await fetch('/api/recommendHospital', {
+      const response = await fetch(buildApiUrl('/api/recommendHospital'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-
+      const payload = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        throw new Error(payload.error || `Request failed with status ${response.status}`);
       }
 
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setResult(data);
-      }
-
-    } catch (e: any) {
-      setError('An unexpected error occurred: ' + (e.message || 'Please try again.'));
-      console.error('Submit error:', e);
+      setResult(payload);
+    } catch (caught) {
+      const err = caught as Error;
+      setError(err.message || 'Unable to search hospitals.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900 p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <Card className="shadow-2xl border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-600 text-white rounded-t-lg">
-            <CardTitle className="text-3xl flex items-center gap-3">
-              <Search className="h-8 w-8" /> Hospital Search & Recommendations
-            </CardTitle>
-            <CardDescription className="text-indigo-100">
-              Search for hospitals based on your medical conditions or symptoms. We'll use real-time web search to find the most relevant options near you.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label htmlFor="diagnosedConditions" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Diagnosed Condition(s)
-                  </label>
-                  <Textarea
-                    id="diagnosedConditions"
-                    value={diagnosedConditions}
-                    onChange={(e) => setDiagnosedConditions(e.target.value)}
-                    placeholder="e.g., Pneumonia, Cardiac Arrhythmia, Diabetes"
-                    className="min-h-[100px] border-2 border-indigo-200 focus:border-teal-500 focus:ring-teal-500 rounded-lg shadow-sm"
-                    disabled={isLoading || isGettingLocation}
-                  />
+    <div className="grid gap-6">
+      <section className="grid gap-4 xl:grid-cols-[0.72fr_1.28fr]">
+        <form onSubmit={handleSubmit} className="soft-panel p-6 sm:p-8">
+          <div className="grid gap-5">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Search brief</p>
+              <h2 className="mt-2 text-3xl text-foreground">Describe the condition and anchor the search with location</h2>
+            </div>
+            <Textarea value={diagnosedConditions} onChange={(event) => setDiagnosedConditions(event.target.value)} placeholder="Diagnosed conditions, comma separated" className="min-h-28 rounded-[24px] bg-background/70" disabled={isLoading} />
+            <Textarea value={symptoms} onChange={(event) => setSymptoms(event.target.value)} placeholder="Symptoms if there is no diagnosis yet" className="min-h-28 rounded-[24px] bg-background/70" disabled={isLoading} />
+            <div className="grid gap-4 rounded-[24px] border border-border/70 bg-background/70 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Location</p>
+                  <p className="text-sm text-muted-foreground">Recommended for precise ranking and map positioning.</p>
                 </div>
-                
-                <div className="space-y-3">
-                  <label htmlFor="symptoms" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Symptoms (if no diagnosis)
-                  </label>
-                  <Textarea
-                    id="symptoms"
-                    value={symptoms}
-                    onChange={(e) => setSymptoms(e.target.value)}
-                    placeholder="e.g., Chest pain, Shortness of breath, High fever"
-                    className="min-h-[100px] border-2 border-indigo-200 focus:border-teal-500 focus:ring-teal-500 rounded-lg shadow-sm"
-                    disabled={isLoading || isGettingLocation}
-                  />
-                </div>
+                <Button type="button" variant="outline" className="rounded-full" onClick={handleGetLocation} disabled={isLoading || isGettingLocation}>
+                  <LocateFixed className="mr-2 h-4 w-4" />
+                  {isGettingLocation ? 'Locating...' : 'Use current location'}
+                </Button>
               </div>
-              
-              <div className="bg-gradient-to-r from-indigo-50 to-teal-50 dark:from-indigo-900/30 dark:to-teal-900/30 p-4 rounded-lg">
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  💡 Separate multiple items with commas. You can enter conditions, symptoms, or both.
-                </p>
+              {userLatitude !== null && userLongitude !== null && (
+                <p className="text-sm text-muted-foreground">Location set: {userLatitude.toFixed(4)}, {userLongitude.toFixed(4)}</p>
+              )}
+              {locationError && <p className="text-sm text-destructive">{locationError}</p>}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">
+              <Input type="number" min="1" max="200" value={searchRadius} onChange={(event) => setSearchRadius(Number.parseInt(event.target.value, 10) || 25)} disabled={isLoading} />
+              <div className="flex items-center gap-3 rounded-full border border-border/70 bg-secondary/70 px-4 py-3 text-sm text-muted-foreground">
+                <Checkbox id="preferGovernment" checked={preferGovernment} onCheckedChange={(checked) => setPreferGovernment(checked === true)} disabled={isLoading} />
+                <label htmlFor="preferGovernment">Prefer government/public hospitals</label>
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl border border-blue-200 dark:border-blue-700">
-                  <label className="block text-lg font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-teal-600" />
-                    Your Location (Optional but Recommended)
-                  </label>
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={handleGetLocation} 
-                    disabled={isLoading || isGettingLocation}
-                    className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white border-0 shadow-lg transition-all duration-300 hover:shadow-xl"
+            </div>
+            <Button type="submit" className="rounded-full px-6 py-6 text-base" disabled={isLoading || isGettingLocation}>
+              {isLoading ? 'Searching hospitals...' : 'Search hospitals'}
+            </Button>
+          </div>
+        </form>
+
+        <section className="soft-panel overflow-hidden">
+          <div className="border-b border-border/70 px-6 py-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Map</p>
+            <h2 className="mt-2 text-3xl text-foreground">Nearby facilities on OpenStreetMap</h2>
+          </div>
+          <div className="h-[520px] overflow-hidden">
+            <MapContainer center={mapCenter} zoom={userLatitude !== null && userLongitude !== null ? 11 : 5} style={{ height: '100%', width: '100%' }}>
+              <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {userLatitude !== null && userLongitude !== null && (
+                <CircleMarker center={[userLatitude, userLongitude]} radius={9} pathOptions={{ color: '#0f766e', fillColor: '#0f766e', fillOpacity: 0.85 }}>
+                  <Popup>Your current location</Popup>
+                </CircleMarker>
+              )}
+              {result?.hospitals.map((hospital) =>
+                hospital.coordinates ? (
+                  <CircleMarker
+                    key={`${hospital.hospitalName}-${hospital.coordinates.lat}-${hospital.coordinates.lng}`}
+                    center={[hospital.coordinates.lat, hospital.coordinates.lng]}
+                    radius={8}
+                    pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.9 }}
+                    eventHandlers={{ click: () => setSelectedHospital(hospital) }}
                   >
-                    {isGettingLocation ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LocateFixed className="mr-2 h-4 w-4" />}
-                    {userLatitude && userLongitude ? 'Update My Location' : 'Get My Current Location'}
-                  </Button>
-                  {userLatitude && userLongitude && (
-                    <div className="space-y-3 p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
-                      <p className="text-sm text-teal-700 dark:text-teal-300 font-medium">
-                        📍 Location: {userLatitude.toFixed(4)}, {userLongitude.toFixed(4)}
-                      </p>
-                      <div>
-                        <label htmlFor="searchRadius" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                          Search Radius (km)
-                        </label>
-                        <Input
-                          id="searchRadius"
-                          type="number"
-                          min="1"
-                          max="1000"
-                          value={searchRadius}
-                          onChange={(e) => setSearchRadius(parseInt(e.target.value) || 0)}
-                          className="w-24 border-2 border-teal-300 focus:border-indigo-500"
-                          disabled={isLoading}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {locationError && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{locationError}</p>}
-                </div>
-                
-                <div className="space-y-4 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 rounded-xl border border-indigo-200 dark:border-indigo-700">
-                  <label className="block text-lg font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-indigo-600" />
-                    Search Preferences
-                  </label>
-                  <div className="flex items-center space-x-3 p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
-                    <Checkbox
-                      id="preferGovernment"
-                      checked={preferGovernment}
-                      onCheckedChange={(checked) => setPreferGovernment(checked === true)}
-                      disabled={isLoading}
-                      className="border-2 border-indigo-300 data-[state=checked]:bg-indigo-600"
-                    />
-                    <label htmlFor="preferGovernment" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Prefer government/public hospitals
-                    </label>
-                  </div>
-                </div>
+                    <Popup>
+                      <p className="font-semibold">{hospital.hospitalName}</p>
+                      <p className="text-xs">{hospital.address || 'Address unavailable'}</p>
+                    </Popup>
+                  </CircleMarker>
+                ) : null
+              )}
+            </MapContainer>
+          </div>
+        </section>
+      </section>
+
+      {error && (
+        <Alert variant="destructive" className="rounded-[24px]">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Hospital search failed</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {result && (
+        <section className="grid gap-4 lg:grid-cols-[0.6fr_1.4fr]">
+          <article className="soft-panel p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Search summary</p>
+            <p className="mt-3 text-sm leading-7 text-foreground/90">{result.recommendationIntro}</p>
+            {selectedHospital && (
+              <div className="mt-5 rounded-[24px] border border-border/70 bg-background/70 p-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Selected hospital</p>
+                <p className="mt-2 text-xl text-foreground">{selectedHospital.hospitalName}</p>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">{selectedHospital.specializationFocus}</p>
+                {selectedHospital.address && <p className="mt-2 text-sm leading-7 text-foreground/90">{selectedHospital.address}</p>}
               </div>
-              
-              <Button 
-                type="submit" 
-                disabled={isLoading || isGettingLocation} 
-                className="w-full bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-600 hover:from-indigo-700 hover:via-blue-700 hover:to-teal-700 text-white text-xl py-6 rounded-xl shadow-2xl transition-all duration-300 hover:shadow-indigo-500/25 hover:scale-[1.02]"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-3 h-6 w-6 animate-spin" /> Searching Hospitals...
-                  </>
-                ) : (
-                  <>
-                    <Search className="mr-3 h-6 w-6" /> Search Hospital Recommendations
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            )}
+            {result.disclaimer && <p className="mt-5 text-sm leading-7 text-muted-foreground">{result.disclaimer}</p>}
+          </article>
 
-        {error && (
-          <Alert variant="destructive" className="shadow-lg border-red-200 bg-red-50 dark:bg-red-900/30">
-            <AlertCircle className="h-5 w-5" />
-            <AlertTitle className="text-red-800 dark:text-red-200">Search Error</AlertTitle>
-            <AlertDescription className="text-red-700 dark:text-red-300">{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        {result && (
-          <Card className="shadow-2xl border-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm animate-in fade-in duration-700">
-            <CardHeader className="bg-gradient-to-r from-teal-600 via-blue-600 to-indigo-600 text-white rounded-t-lg">
-              <CardTitle className="text-3xl flex items-center gap-3">
-                <ListChecks className="h-8 w-8" /> Search Results
-              </CardTitle>
-              <CardDescription className="text-teal-100">{result.recommendationIntro}</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 space-y-8">
-              {googleMapsApiKey && result.hospitals && result.hospitals.some(h => h.coordinates) && (
-                <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-gradient-to-r from-indigo-300 to-teal-300">
-                  <LoadScriptNext googleMapsApiKey={googleMapsApiKey} loadingElement={<div className="text-center p-8 bg-gradient-to-r from-indigo-100 to-teal-100">Loading Map...</div>}>
-                    <GoogleMap
-                      mapContainerStyle={mapContainerStyle}
-                      center={mapCenter}
-                      zoom={userLatitude && userLongitude ? 10 : 4}
-                      onLoad={(map) => {
-                      }}
-                    >
-                      {userLatitude && userLongitude && (
-                        <MarkerF
-                          position={{ lat: userLatitude, lng: userLongitude }}
-                          title="Your Location"
-                          icon={{
-                            path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-                            scale: 10,
-                            fillColor: '#0F766E',
-                            fillOpacity: 1,
-                            strokeColor: '#ffffff',
-                            strokeWeight: 3,
-                          }}
-                          onClick={() => setSelectedHospital({
-                            hospitalName: "Your Current Location",
-                            specializationFocus: "User Position",
-                            simulatedRankingReason: "This is your current location based on GPS coordinates.",
-                            address: `Lat: ${userLatitude.toFixed(4)}, Lng: ${userLongitude.toFixed(4)}`,
-                            coordinates: { lat: userLatitude, lng: userLongitude }
-                          })}
-                        />
-                      )}
-                      
-                      {result.hospitals.map((hospital, index) =>
-                        hospital.coordinates ? (
-                          <MarkerF
-                            key={`hospital-${index}`}
-                            position={hospital.coordinates}
-                            onClick={() => setSelectedHospital(hospital)}
-                            title={hospital.hospitalName}
-                            icon={{
-                              path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-                              scale: 8,
-                              fillColor: '#4F46E5',
-                              fillOpacity: 1,
-                              strokeColor: '#ffffff',
-                              strokeWeight: 2,
-                            }}
-                          />
-                        ) : null
-                      )}
-                      {selectedHospital && selectedHospital.coordinates && (
-                        <InfoWindowF
-                          position={selectedHospital.coordinates}
-                          onCloseClick={() => setSelectedHospital(null)}
-                        >
-                          <div className="p-3 max-w-xs">
-                            <h4 className="font-bold text-base text-indigo-700">{selectedHospital.hospitalName}</h4>
-                            {selectedHospital.hospitalName === "Your Current Location" ? (
-                              <div>
-                                <p className="text-sm text-teal-600 font-medium">📍 Your GPS Location</p>
-                                <p className="text-xs text-slate-600 mt-1">{selectedHospital.address}</p>
-                              </div>
-                            ) : (
-                              <div>
-                                <p className="text-sm text-slate-600">{selectedHospital.address || "Address not available"}</p>
-                                <p className="text-sm mt-1 text-blue-700">{selectedHospital.specializationFocus}</p>
-                                {selectedHospital.contact && (
-                                  <p className="text-sm mt-1 font-medium text-indigo-600">{selectedHospital.contact}</p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </InfoWindowF>
-                      )}
-                    </GoogleMap>
-                  </LoadScriptNext>
-                </div>
-              )}
-              
-              {!googleMapsApiKey && result.hospitals && result.hospitals.some(h => h.coordinates) && (
-                <Alert variant="default" className="bg-gradient-to-r from-indigo-50 to-teal-50 border-indigo-200">
-                  <MapPin className="h-5 w-5 text-indigo-600" />
-                  <AlertTitle className="text-indigo-800">Map Display Available</AlertTitle>
-                  <AlertDescription className="text-indigo-700">
-                    To see hospitals on a map, set up your Google Maps API key in `.env.local` as `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {result.hospitals && result.hospitals.length > 0 ? (
-                <div className="grid gap-6">
-                  {result.hospitals.map((hospital, index) => (
-                    <Card 
-                      key={index} 
-                      className="bg-gradient-to-br from-white to-indigo-50 dark:from-slate-800 dark:to-indigo-900/30 shadow-xl border-2 border-indigo-200 dark:border-indigo-700 hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-300 cursor-pointer hover:scale-[1.02]" 
-                      onClick={() => hospital.coordinates && setSelectedHospital(hospital)}
-                    >
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-600">{hospital.hospitalName}</CardTitle>
-                        <CardDescription className="font-semibold text-blue-700 dark:text-blue-300">{hospital.specializationFocus}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-teal-600 mt-0.5 flex-shrink-0" />
-                            Why recommended:
-                          </span>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">{hospital.simulatedRankingReason}</p>
-                        </div>
-                        
-                        {hospital.address && (
-                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm">Address:</span>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">{hospital.address}</p>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {hospital.contact && (
-                          <div className="flex items-start gap-2">
-                            <Sparkles className="h-4 w-4 text-teal-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm">Contact:</span>
-                              <p className="text-sm text-slate-600 dark:text-slate-400">{hospital.contact}</p>
-                            </div>
-                          </div>
-                        )}
-
-                        {hospital.coordinates && (
-                          <div className="flex items-center gap-2 text-sm text-teal-600 dark:text-teal-400 font-medium bg-teal-50 dark:bg-teal-900/30 px-3 py-2 rounded-lg">
-                            <MapPin className="h-4 w-4" />
-                            Click to view on map
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Alert className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
-                  <CheckCircle className="h-4 w-4 text-yellow-600" />
-                  <AlertTitle className="text-yellow-800">No Specific Hospitals Found</AlertTitle>
-                  <AlertDescription className="text-yellow-700">
-                    The search didn't return specific hospital recommendations. Try adjusting your search terms or location settings.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+          <div className="grid gap-4">
+            {result.hospitals.length > 0 ? (
+              result.hospitals.map((hospital) => (
+                <button key={`${hospital.hospitalName}-${hospital.address}`} type="button" onClick={() => setSelectedHospital(hospital)} className="soft-panel p-6 text-left transition-transform duration-200 hover:-translate-y-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-2xl text-foreground">{hospital.hospitalName}</h3>
+                      <p className="mt-2 text-sm leading-7 text-muted-foreground">{hospital.specializationFocus}</p>
+                    </div>
+                    <Search className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-foreground/90">{hospital.simulatedRankingReason}</p>
+                  {hospital.address && (
+                    <p className="mt-4 flex items-start gap-2 text-sm leading-7 text-muted-foreground">
+                      <MapPin className="mt-1 h-4 w-4" />
+                      <span>{hospital.address}</span>
+                    </p>
+                  )}
+                  {hospital.contact && <p className="mt-2 text-sm leading-7 text-muted-foreground">Contact: {hospital.contact}</p>}
+                </button>
+              ))
+            ) : (
+              <div className="soft-panel p-6">
+                <p className="text-sm leading-7 text-muted-foreground">No hospitals were returned for this query. Try changing the radius, adding location, or simplifying the symptom list.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

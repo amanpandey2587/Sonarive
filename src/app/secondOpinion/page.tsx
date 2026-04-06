@@ -1,21 +1,13 @@
-import React from 'react'
-import { PageContainer } from '@/components/ui/common/pageContainer'
-import { PageHeader } from '@/components/ui/common/pageHeader'
-import SecondOpinionForm from './secondOpinionForm'
-const secondOpinionPage = () => {
-  return (
-    <div className='bg-gradient-to-br from-teal-900 via-indigo-900 to-blue-950'>
-      <PageContainer>
-        <PageHeader
-        title="AI-Powered Second Opinion"
-        description="Get a simulated second opinion by having Sonar-AI research medical literature, alternative treatments and more."
-        />
-        <div className='max-w-3xl mx-auto mt-10'>
-            <SecondOpinionForm/>
-        </div>
-      </PageContainer>
-    </div>
-  )
-}
+﻿import React from 'react';
+import { PageContainer } from '@/components/ui/common/pageContainer';
+import { PageHeader } from '@/components/ui/common/pageHeader';
+import SecondOpinionForm from './secondOpinionForm';
 
-export default  secondOpinionPage
+export default function SecondOpinionPage() {
+  return (
+    <PageContainer className="space-y-8">
+      <PageHeader eyebrow="second opinion" title="Pressure-test an existing treatment plan." description="Provide diagnosis, age, gender, and current medications to get a structured review of appropriateness, alternatives, additional tests, and caution points." />
+      <SecondOpinionForm />
+    </PageContainer>
+  );
+}
