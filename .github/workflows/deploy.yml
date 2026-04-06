@@ -26,6 +26,8 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r backend/requirements.txt
+        env:
+            GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       - run: pytest backend/tests/ -v
 
   # ── 3. Docker Build ─────────────────────────────────────────
